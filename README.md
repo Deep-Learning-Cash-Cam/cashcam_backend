@@ -1,1 +1,1 @@
-# final-project
+# Cam Coin Calculator
