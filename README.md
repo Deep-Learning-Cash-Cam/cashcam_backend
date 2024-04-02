@@ -1,1 +1,1 @@
-# Cam Coin Calculator
+# Camera Money Calculator
