@@ -1,1 +1,1 @@
-# Camera Money Calculator
+# CashCam
