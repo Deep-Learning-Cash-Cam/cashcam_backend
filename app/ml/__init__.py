@@ -1,1 +1,1 @@
-from .model import YOLOModel
+from .model import model

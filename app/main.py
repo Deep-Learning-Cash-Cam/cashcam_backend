@@ -1,32 +1,32 @@
 from fastapi import FastAPI
 from app.core.config import settings
 from app.api.routes import router as api_router
-from app.ml.model import YOLOModel
+from app.ml.model import model
+from contextlib import asynccontextmanager
 
-app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
-
-app.include_router(api_router, prefix="/api")
-
-# model = YOLOModel(settings.MODEL_PATH)
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the YOLOv8 Object Detection API"}
-
-@app.on_event("startup")
-async def startup_event():
-    print("Starting up the server...") 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Starting up the server...")
+    # Startup logic:
     # load the model
     # connect to external apis
     # connect to the database if needed
     # get exchange rates
-
-@app.on_event("shutdown")
-async def shutdown_event():
+    
+    yield # App running
+    
     print("Shutting down the server...")
+    # Shutdown logic
     # close any open connections
     # save any data that might be lost
     # shutdown the model
+
+app = FastAPI(lifespan=lifespan, title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
+app.include_router(api_router, prefix=settings.API_PREFIX)
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to CashCam!"}
 
 
 # post predict image value
@@ -48,7 +48,7 @@ async def shutdown_event():
 #             "return_currency_value": 3.6$
 #         }
 #     },
-#     "image-url": "https://www.example.com/images/image-440xf9E.jpg"
+#     "image": "TODO" (Base64)
 # }
 
 # get exchange rate from external api during startup

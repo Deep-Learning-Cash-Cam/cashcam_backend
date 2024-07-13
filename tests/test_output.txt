@@ -1,0 +1,10 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.4, pytest-8.2.2, pluggy-1.5.0 -- C:\Users\evron\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\evron\Desktop\Main Folder\Toaar\DL Final Project\final-project-deep-learning
+plugins: anyio-3.7.1
+collecting ... collected 1 item
+
+tests/test_main.py::test_read_main PASSED                                [100%]
+
+============================== 1 passed in 1.06s ==============================
