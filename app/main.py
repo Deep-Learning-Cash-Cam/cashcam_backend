@@ -7,16 +7,15 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up the server...")
-    # Startup logic:
-    # load the model
-    # connect to external apis
-    # connect to the database if needed
-    # get exchange rates
+    # Startup
+    model.load_model(settings.MODEL_PATH) # load the model
+    #TODO: connect to external api for get exchange rates 
+    # connect to the database if needed (Optional)
     
     yield # App running
     
     print("Shutting down the server...")
-    # Shutdown logic
+    # TODO: Shutdown logic
     # close any open connections
     # save any data that might be lost
     # shutdown the model

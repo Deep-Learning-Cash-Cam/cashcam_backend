@@ -1,21 +1,21 @@
 from app.core.config import settings
+import tensorflow as tf
 class MyModel:
     model = None
 
     @classmethod
     def load_model(cls, model_path):
-        pass
+        cls.model = tf.keras.models.load_model(settings.MODEL_PATH)
 
     @classmethod
     def predict(cls, image):
-        # if cls.model is None:
-        #     raise RuntimeError("Model not loaded. Call load_model first.")
-        # results = cls.model(image)
-        # return results.pandas().xyxy[0].to_dict(orient="records")
-        pass
+        if cls.model is None:
+            cls.load_model(settings.MODEL_PATH)
+        results = cls.model(image)
+        return results
     
     @classmethod
-    def save_processed_image(cls, image_data, filename):
+    def save_processed_image(cls, image_data, filename): #TODO
         # with open(filename, "wb") as f:
         #     f.write(image_data)
         # return filename
