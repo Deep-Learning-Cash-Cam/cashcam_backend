@@ -1,6 +1,11 @@
 fastapi
 uvicorn
-tensorflow
+torch
+torchvision
+pillow
+numpy
+pandas
+
 pydantic
 pydantic-settings
 ultralytics

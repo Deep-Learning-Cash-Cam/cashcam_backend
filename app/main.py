@@ -3,12 +3,12 @@ from app.core.config import settings
 from app.api.routes import router as api_router
 from app.ml.model import model
 from contextlib import asynccontextmanager
-
+#uvicorn app.main:app --reload
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up the server...")
     # Startup
-    model.load_model(settings.MODEL_PATH) # load the model
+    model.load_model() # load the model
     #TODO: connect to external api for get exchange rates 
     # connect to the database if needed (Optional)
     
