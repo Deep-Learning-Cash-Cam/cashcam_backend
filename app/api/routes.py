@@ -23,14 +23,13 @@ async def predict(request: PredictRequest):
         
         # Detect, classify objects, anotate image and get the detected counts with the requested currency's conversion rate
         try:
-            cropped_images, boxes_and_classes = model.detect_and_collect_objects(model.object_detection_model, image, confidence_threshold=0.5)
+            cropped_images, boxes_and_classes = model.detect_and_collect_objects(model.object_detection_model, image, confidence_threshold=0.1)
             classified_objects = model.classify_objects(model.classification_model, cropped_images)
             annotated_image = model.annotate_image(image, boxes_and_classes, classified_objects)
             currencies = model.get_detected_counts(classified_objects, request.return_currency)
         except Exception as e:
             raise ValueError(f"Error in detecting and classifying objects - {str(e)}")
         
-        print("Predicted successfully")
         # Convert annotated image to base64
         try:
             buffered = io.BytesIO()

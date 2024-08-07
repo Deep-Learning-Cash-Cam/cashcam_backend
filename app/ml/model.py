@@ -14,7 +14,8 @@ class MyModel:
         '0.01 Euro':'EUR_C_1', '0.02 Euro':'EUR_C_2', '0.05 Euro':'EUR_C_5', '0.1 Euro':'EUR_C_10', '0.2 Euro':'EUR_C_20', '0.5 Euro':'EUR_C_50', '1 Euro':'EUR_C_100', '2 Euro':'EUR_C_200',
         '5 Euro':'EUR_B_5', '10 Euro':'EUR_B_10', '20 Euro':'EUR_B_20', '50 Euro':'EUR_B_50', '100 Euro':'EUR_B_100', '200 Euro':'EUR_B_200', '500 Euro':'EUR_B_500',
         '0.01 USD':'USD_C_1', '0.05 USD':'USD_C_5', '0.1 USD':'USD_C_10', '0.25 USD':'USD_C_25', '0.5 USD':'USD_C_50', '1 USD COIN':'USD_C_100',
-        '1 USD BILL':'USD_B_1', '2 USD':'USD_B_2', '5 USD':'USD_B_5', '10 USD':'USD_B_10', '20 USD':'USD_B_20', '50 USD':'USD_B_50', '100 USD':'USD_B_100'
+        '1 USD BILL':'USD_B_1', '2 USD':'USD_B_2', '5 USD':'USD_B_5', '10 USD':'USD_B_10', '20 USD':'USD_B_20', '50 USD':'USD_B_50', '100 USD':'USD_B_100',
+        'Unknown':'Unknown'
         }
 
     @classmethod
@@ -26,9 +27,7 @@ class MyModel:
         img_np = np.array(image)
 
         # Detect objects in the image
-        print("Starting to detect objects")
         results = YOLO_model(image)
-        print("Finished detecting objects")
 
         detections = results[0].boxes.xyxy.cpu().numpy()
         classes = results[0].boxes.cls.cpu().numpy()
@@ -52,7 +51,6 @@ class MyModel:
             # Add to cropped_images
             cropped_images.append(cropped_img)
 
-        print("Finished detecting objects")
         return cropped_images, boxes_and_classes
 
     @classmethod
@@ -64,7 +62,7 @@ class MyModel:
             img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             # Perform inference on the original cropped image
-            results = YOLO_model(img_rgb, verbose=False)
+            results = YOLO_model(img_rgb)
 
             detections = results[0].boxes.xyxy.cpu().numpy()
             classes = results[0].boxes.cls.cpu().numpy()
@@ -78,7 +76,6 @@ class MyModel:
             else:
                 classified_objects.append(("Unknown", 0.0))
 
-        print("Finished classifying objects")
         return classified_objects
 
     @classmethod
@@ -100,10 +97,9 @@ class MyModel:
             draw.rectangle(text_bbox, fill="red")
             draw.text((x1, y1), label, fill="white")
             
-            #Convert the image to PIL format
-            image = Image.fromarray(np.array(image))
+        #Convert the image to PIL format
+        image = Image.fromarray(np.array(image))
         
-        print("Finished annotating image")
         return image
 
     @classmethod
@@ -123,7 +119,6 @@ class MyModel:
         except:
             raise ValueError("Currency not found in currencies_dict")
         
-        print("Currency counts:", detected_currencies)
         currencies = MyModel.calculate_return_currency_value(detected_currencies, return_currency)
         return currencies
     
@@ -137,7 +132,7 @@ class MyModel:
         for currency, count in detected_currencies.items():
             currencies[currency] = CurrencyInfo(quantity=count, return_currency_value=1.0) # Placeholder
 
-        print(f"Currencies: {currencies}")
+        print(f"Detected currencies: {currencies}")
         return currencies
 
 model = MyModel()
