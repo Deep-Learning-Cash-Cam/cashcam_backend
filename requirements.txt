@@ -6,7 +6,6 @@ torchvision
 pillow
 numpy
 pandas
-
 pydantic
 pydantic-settings
 ultralytics
