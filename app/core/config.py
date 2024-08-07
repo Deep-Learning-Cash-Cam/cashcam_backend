@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     IMAGE_BASE_URL: str = "https://www.example.com/images" #TODO
     API_PREFIX: str = "/api"
     TEST_OUTPUT_PATH: str = "tests/test_output.txt"
-    PORT: int = 8000
-    LOCAL_IP: str = "127.0.0.1"
+    PORT: int = 80
+    LOCAL_IP: str = "0.0.0.0"
     DEBUG: bool = True
 
     class ConfigDict:
