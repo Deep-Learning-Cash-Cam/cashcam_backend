@@ -3,10 +3,13 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PROJECT_NAME: str = "CahsCam"
     PROJECT_VERSION: str = "1.0.0"
-    MODEL_PATH: str = "models/best.pt"
+    OBJECT_DETECTION_MODEL: str = "models/bill_coin_yolo_best.pt"
+    CLASSIFICATION_MODEL: str = "models/class_YOLO_model_best.pt"
     IMAGE_BASE_URL: str = "https://www.example.com/images" #TODO
     API_PREFIX: str = "/api"
     TEST_OUTPUT_PATH: str = "tests/test_output.txt"
+    PORT: int = 8000
+    LOCAL_IP: str = "127.0.0.1"
     DEBUG: bool = True
 
     class ConfigDict:

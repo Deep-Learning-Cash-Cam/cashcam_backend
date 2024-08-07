@@ -5,54 +5,44 @@ import pandas
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
+from ultralytics import YOLO
+import cv2
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+import numpy as np
 
 class MyModel:
-    model = None
+    object_detection_model = None
+    classification_model = None
 
     @classmethod
     def load_model(cls):
-        cls.model = YOLO(settings.MODEL_PATH)
+        cls.object_detection_model = YOLO(settings.OBJECT_DETECTION_MODEL)
+        cls.classification_model = YOLO(settings.CLASSIFICATION_MODEL)
 
     @classmethod
-    def detect_and_collect_objects(cls, image_path, confidence_threshold=0.5):
+    def detect_and_collect_objects(YOLO_model, image, confidence_threshold=0.5):
         detected_objects = {'bill': [], 'coin': []}
         cropped_images = []
         boxes_and_classes = []
 
-        # Read the image
-        img = cv2.imread(image_path)
-        if img is None:
-            print(f"Error loading image: {image_path}")
-            return detected_objects, cropped_images, boxes_and_classes
+        # Convert to RGB numpy array
+        img_rgb = np.array(image.convert('RGB'))
 
-        # Get original image dimensions
-        original_height, original_width = img.shape[:2]
-
-        # Convert to RGB (YOLO expects RGB images)
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        # Resize the image to 640x640
-        img_resized = cv2.resize(img_rgb, (640, 640))
-
-        # Perform inference on the resized image
-        results = cls.model(img_resized)
-
-        # Convert back to original image coordinates
-        scale_x = original_width / 640
-        scale_y = original_height / 640
+        # Detect objects in the image
+        results = YOLO_model(img_rgb)
 
         detections = results[0].boxes.xyxy.cpu().numpy()
         classes = results[0].boxes.cls.cpu().numpy()
         confidences = results[0].boxes.conf.cpu().numpy()
-        names = cls.model.names
+        names = YOLO_model.names
 
         for i, box in enumerate(detections):
             confidence = confidences[i]
             if confidence < confidence_threshold:
                 continue  # Skip detections below the confidence threshold
 
-            # Scale the bounding box coordinates back to the original image size
-            x1, y1, x2, y2 = map(int, [box[0] * scale_x, box[1] * scale_y, box[2] * scale_x, box[3] * scale_y])
+            x1, y1, x2, y2 = map(int, box)
             class_name = names[int(classes[i])]
 
             # Crop the detected region
@@ -72,20 +62,11 @@ class MyModel:
         classified_objects = []
 
         for img in cropped_images:
-            original_height, original_width = img.shape[:2]
-
-            # Resize the image to 640x640
-            img_resized = cv2.resize(img, (640, 640))
-
             # Convert to RGB (YOLO expects RGB images)
-            img_rgb = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            # Perform inference on the resized image
+            # Perform inference on the original cropped image
             results = YOLO_model(img_rgb)
-
-            # Convert back to original image coordinates
-            scale_x = original_width / 640
-            scale_y = original_height / 640
 
             detections = results[0].boxes.xyxy.cpu().numpy()
             classes = results[0].boxes.cls.cpu().numpy()
@@ -103,13 +84,8 @@ class MyModel:
 
 
     @classmethod
-    def annotate_image(image_path, boxes_and_classes, classified_objects):
-        img = cv2.imread(image_path)
-        if img is None:
-            print(f"Error loading image: {image_path}")
-            return
-
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    def annotate_image(image, boxes_and_classes, classified_objects):
+        img_rgb = np.array(image.convert('RGB'))
         fig, ax = plt.subplots(1, figsize=(12, 9))
         ax.imshow(img_rgb)
 
@@ -127,14 +103,8 @@ class MyModel:
         ax.set_title('Original Image with Bounding Boxes and Classifications')
         plt.show()
 
-    @classmethod
-    def convert_currency(cls, from_currency, to_currency):
-        # Implement currency conversion logic here
-        # You might want to use an external API for up-to-date exchange rates
-        pass
-
-    @classmethod
-    def print_detected_counts(classified_objects):
+    @classmethod    
+    def get_detected_counts(classified_objects):
         counts = {}
         for class_name, _ in classified_objects:
             if class_name in counts:
@@ -149,8 +119,16 @@ class MyModel:
             '0.01 USD', '0.05 USD', '0.1 USD', '0.25 USD', '0.5 USD', '1 USD COIN', '1 USD BILL', '2 USD', '5 USD',
             '10 USD', '20 USD', '50 USD', '100 USD'
         ]
+        
+        # Create a dictionary with the detected counts for each currency and remove any currencies with 0 counts
+        detected_currencies = {currency: counts.get(currency, 0) for currency in currencies} 
+        detected_currencies = {k: v for k, v in detected_currencies.items() if v > 0}
 
-        for currency in currencies:
-            print(f"{currency}: {counts.get(currency, 0)} images")
+        return detected_currencies
+    
+    @classmethod
+    def calculate_return_currency_value(detected_currencies, return_currency):
+        pass
+        
 
 model = MyModel()

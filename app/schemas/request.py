@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from fastapi import UploadFile, File
 
 class PredictRequest(BaseModel):
     image: str  # Base64 encoded image
