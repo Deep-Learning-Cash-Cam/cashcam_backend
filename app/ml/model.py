@@ -1,42 +1,40 @@
 from app.core.config import settings
 from ultralytics import YOLO
-import cv2
-import pandas
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
-from ultralytics import YOLO
+from PIL import Image, ImageDraw
 import cv2
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
-import numpy as np
+from app.schemas.response import CurrencyInfo
 
 class MyModel:
-    object_detection_model = None
-    classification_model = None
+    object_detection_model = YOLO(settings.OBJECT_DETECTION_MODEL)
+    classification_model = YOLO(settings.CLASSIFICATION_MODEL)
+    currencies_dict = { # Dictionary mapping the class names to the currency names (keys related to the model and values relate to the app's label)
+        '0.1 NIS':'NIS_C_10', '0.5 NIS':'NIS_C_50', '1 NIS':'NIS_C_100', '2 NIS':'NIS_C_200', '5 NIS':'NIS_C_500', '10 NIS':'NIS_C_1000',
+        '20 NIS':'NIS_B_20', '50 NIS':'NIS_B_50', '100 NIS':'NIS_B_100', '200 NIS':'NIS_B_200',
+        '0.01 Euro':'EUR_C_1', '0.02 Euro':'EUR_C_2', '0.05 Euro':'EUR_C_5', '0.1 Euro':'EUR_C_10', '0.2 Euro':'EUR_C_20', '0.5 Euro':'EUR_C_50', '1 Euro':'EUR_C_100', '2 Euro':'EUR_C_200',
+        '5 Euro':'EUR_B_5', '10 Euro':'EUR_B_10', '20 Euro':'EUR_B_20', '50 Euro':'EUR_B_50', '100 Euro':'EUR_B_100', '200 Euro':'EUR_B_200', '500 Euro':'EUR_B_500',
+        '0.01 USD':'USD_C_1', '0.05 USD':'USD_C_5', '0.1 USD':'USD_C_10', '0.25 USD':'USD_C_25', '0.5 USD':'USD_C_50', '1 USD COIN':'USD_C_100',
+        '1 USD BILL':'USD_B_1', '2 USD':'USD_B_2', '5 USD':'USD_B_5', '10 USD':'USD_B_10', '20 USD':'USD_B_20', '50 USD':'USD_B_50', '100 USD':'USD_B_100'
+        }
 
     @classmethod
-    def load_model(cls):
-        cls.object_detection_model = YOLO(settings.OBJECT_DETECTION_MODEL)
-        cls.classification_model = YOLO(settings.CLASSIFICATION_MODEL)
-
-    @classmethod
-    def detect_and_collect_objects(YOLO_model, image, confidence_threshold=0.5):
-        detected_objects = {'bill': [], 'coin': []}
+    def detect_and_collect_objects(cls, YOLO_model, image, confidence_threshold=0.5):
         cropped_images = []
         boxes_and_classes = []
 
-        # Convert to RGB numpy array
-        img_rgb = np.array(image.convert('RGB'))
+        # Convert from PIL to numpy array
+        img_np = np.array(image)
 
         # Detect objects in the image
-        results = YOLO_model(img_rgb)
+        print("Starting to detect objects")
+        results = YOLO_model(image)
+        print("Finished detecting objects")
 
         detections = results[0].boxes.xyxy.cpu().numpy()
         classes = results[0].boxes.cls.cpu().numpy()
         confidences = results[0].boxes.conf.cpu().numpy()
         names = YOLO_model.names
-
+        
         for i, box in enumerate(detections):
             confidence = confidences[i]
             if confidence < confidence_threshold:
@@ -46,19 +44,19 @@ class MyModel:
             class_name = names[int(classes[i])]
 
             # Crop the detected region
-            cropped_img = img_rgb[y1:y2, x1:x2]
+            cropped_img = img_np[y1:y2, x1:x2]
 
             # Add to detected_objects and boxes_and_classes
-            detected_objects[class_name].append((cropped_img, confidence))
             boxes_and_classes.append((x1, y1, x2, y2, class_name, confidence))
 
             # Add to cropped_images
             cropped_images.append(cropped_img)
 
-        return detected_objects, cropped_images, boxes_and_classes
+        print("Finished detecting objects")
+        return cropped_images, boxes_and_classes
 
     @classmethod
-    def classify_objects(YOLO_model, cropped_images):
+    def classify_objects(cls, YOLO_model, cropped_images):
         classified_objects = []
 
         for img in cropped_images:
@@ -66,7 +64,7 @@ class MyModel:
             img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             # Perform inference on the original cropped image
-            results = YOLO_model(img_rgb)
+            results = YOLO_model(img_rgb, verbose=False)
 
             detections = results[0].boxes.xyxy.cpu().numpy()
             classes = results[0].boxes.cls.cpu().numpy()
@@ -80,31 +78,36 @@ class MyModel:
             else:
                 classified_objects.append(("Unknown", 0.0))
 
+        print("Finished classifying objects")
         return classified_objects
 
-
     @classmethod
-    def annotate_image(image, boxes_and_classes, classified_objects):
-        img_rgb = np.array(image.convert('RGB'))
-        fig, ax = plt.subplots(1, figsize=(12, 9))
-        ax.imshow(img_rgb)
-
+    def annotate_image(cls, image, boxes_and_classes, classified_objects):
+        draw = ImageDraw.Draw(image)
+        
         for (x1, y1, x2, y2, original_class, confidence), (classified_class, class_confidence) in zip(boxes_and_classes, classified_objects):
-            rect = Rectangle((x1, y1), x2 - x1, y2 - y1, linewidth=2, edgecolor='red', facecolor='none')
-            ax.add_patch(rect)
-
+            # Draw the bounding box
+            draw.rectangle([x1, y1, x2, y2], outline="red", width=2)
+        
+            # Create the label
             if classified_class != "Unknown":
                 label = f"{classified_class} ({class_confidence:.2f})"
             else:
                 label = f"{original_class} ({confidence:.2f}) - Unknown"
+        
+            # Draw the label
+            text_bbox = draw.textbbox((x1, y1), label)
+            draw.rectangle(text_bbox, fill="red")
+            draw.text((x1, y1), label, fill="white")
+            
+            #Convert the image to PIL format
+            image = Image.fromarray(np.array(image))
+        
+        print("Finished annotating image")
+        return image
 
-            ax.text(x1, y1, label, color='white', fontsize=12, backgroundcolor='red')
-
-        ax.set_title('Original Image with Bounding Boxes and Classifications')
-        plt.show()
-
-    @classmethod    
-    def get_detected_counts(classified_objects):
+    @classmethod
+    def get_detected_counts(cls, classified_objects, return_currency):
         counts = {}
         for class_name, _ in classified_objects:
             if class_name in counts:
@@ -112,23 +115,29 @@ class MyModel:
             else:
                 counts[class_name] = 1
 
-        currencies = [
-            '0.1 NIS', '0.5 NIS', '1 NIS', '2 NIS', '5 NIS', '10 NIS', '20 NIS', '50 NIS', '100 NIS', '200 NIS',
-            '0.01 Euro', '0.02 Euro', '0.05 Euro', '0.1 Euro', '0.2 Euro', '0.5 Euro', '1 Euro', '2 Euro', '5 Euro',
-            '10 Euro', '20 Euro', '50 Euro', '100 Euro', '200 Euro', '500 Euro',
-            '0.01 USD', '0.05 USD', '0.1 USD', '0.25 USD', '0.5 USD', '1 USD COIN', '1 USD BILL', '2 USD', '5 USD',
-            '10 USD', '20 USD', '50 USD', '100 USD'
-        ]
+        try:
+            # Create a dictionary with the detected counts for each currency and remove any currencies with 0 counts
+            # Also swap the class names with the currency names using the currencies_dict
+            detected_currencies = {MyModel.currencies_dict.get(class_name): count for class_name, count in counts.items()}
+            detected_currencies = {k: v for k, v in detected_currencies.items() if v > 0}
+        except:
+            raise ValueError("Currency not found in currencies_dict")
         
-        # Create a dictionary with the detected counts for each currency and remove any currencies with 0 counts
-        detected_currencies = {currency: counts.get(currency, 0) for currency in currencies} 
-        detected_currencies = {k: v for k, v in detected_currencies.items() if v > 0}
-
-        return detected_currencies
+        print("Currency counts:", detected_currencies)
+        currencies = MyModel.calculate_return_currency_value(detected_currencies, return_currency)
+        return currencies
     
     @classmethod
-    def calculate_return_currency_value(detected_currencies, return_currency):
-        pass
+    def calculate_return_currency_value(cls, detected_currencies, return_currency):
+        currencies = {}
         
+        #TODO: Add the conversion rates here using API
+        
+        # Transform the detected currencies to the 'currency' structure
+        for currency, count in detected_currencies.items():
+            currencies[currency] = CurrencyInfo(quantity=count, return_currency_value=1.0) # Placeholder
+
+        print(f"Currencies: {currencies}")
+        return currencies
 
 model = MyModel()

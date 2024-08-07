@@ -1,64 +1,59 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
-from app.schemas import PredictRequest, PredictResponse, CurrencyInfo, EncodedImage
+from app.schemas import PredictRequest, PredictResponse, EncodedImageResponse, EncodedImageRequest
 from app.ml.model import MyModel
 from fastapi.responses import HTMLResponse, JSONResponse
 import base64
 from PIL import Image
 import io
-import numpy as np
-from ultralytics import YOLO
-import cv2
 
-router = APIRouter()
 model = MyModel()
-object_detection_model = model.object_detection_model
-classification_model = model.classification_model
+router = APIRouter()
 
 @router.post("/predict", response_model=PredictResponse)
 async def predict(request: PredictRequest):
     try:
-        # Decode base64 image
-        image_data = base64.b64decode(request.image)
-        image = Image.open(io.BytesIO(image_data))
+
+        try:
+            # Decode base64 image
+            image_data = base64.b64decode(request.image)
+            image = Image.open(io.BytesIO(image_data))
+            image = image.convert('RGB')
+        except Exception as e:
+            raise ValueError("Invalid image - Unable to decode the image")
         
-        # Detect and classify objects
-        detected_objects, cropped_images, boxes_and_classes = model.detect_and_collect_objects(object_detection_model, image, confidence_threshold=0.5)
-        classified_objects = model.classify_objects(classification_model, cropped_images)
-        model.annotate_image(image, boxes_and_classes, classified_objects)
-        detected_currencies = model.get_detected_counts(classified_objects)
+        # Detect, classify objects, anotate image and get the detected counts with the requested currency's conversion rate
+        try:
+            cropped_images, boxes_and_classes = model.detect_and_collect_objects(model.object_detection_model, image, confidence_threshold=0.5)
+            classified_objects = model.classify_objects(model.classification_model, cropped_images)
+            annotated_image = model.annotate_image(image, boxes_and_classes, classified_objects)
+            currencies = model.get_detected_counts(classified_objects, request.return_currency)
+        except Exception as e:
+            raise ValueError(f"Error in detecting and classifying objects - {str(e)}")
         
-        # Process results to get currency information
-        currencies = {}
-        for (class_name, confidence) in classified_objects:
-            if class_name not in currencies:
-                currencies[class_name] = CurrencyInfo(quantity=1, return_currency_value=0.0)
-            else:
-                currencies[class_name].quantity += 1
-            
-            # Here you would calculate the return_currency_value based on the detected currency and the requested return_currency
-            # This is just a placeholder, you'll need to implement the actual conversion logic
-            currencies[class_name].return_currency_value = model.convert_currency(class_name, request.return_currency)
-        
-        # Annotate the image
-        annotated_image = model.annotate_image(image_np, boxes_and_classes, classified_objects)
-        
+        print("Predicted successfully")
         # Convert annotated image to base64
-        _, buffer = cv2.imencode('.jpg', annotated_image)
-        annotated_image_base64 = base64.b64encode(buffer).decode('utf-8')
+        try:
+            buffered = io.BytesIO()
+            annotated_image.save(buffered, format="JPEG")
+            annotated_image_base64 = base64.b64encode(buffered.getvalue()).decode()
+        except Exception as e:
+            raise ValueError(f"Error in encoding the image - {str(e)}")
         
         return PredictResponse(currencies=currencies, image=annotated_image_base64)
     
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=f"Internal error - {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"General error - {str(e)}")
     
 
-@router.post("/encode_image" ,response_model=EncodedImage)
+@router.post("/encode_image" ,response_model=EncodedImageResponse)
 async def upload_image(file: UploadFile = File(...)):
     try:
-        
         # Read the image
         image = Image.open(io.BytesIO(await file.read()))
         
+        # Convert the image to RGB and encode it to base64
         image = image.convert("RGB")
         Buffered = io.BytesIO()
         image.save(Buffered, format="JPEG")
@@ -68,19 +63,10 @@ async def upload_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/show_image",response_model=EncodedImage)
-async def show_image(request: EncodedImage):
+@router.post("/show_image")
+async def show_image(request: EncodedImageRequest):
     try:
-        try:
-            image_data = base64.b64decode(request.image)
-            image = Image.open(io.BytesIO(image_data))
-            image = image.convert("RGB")
-        except:
-            raise HTTPException(status_code=400, detail="Invalid image data")
-        
-        buffered = io.BytesIO()
-        image.save(buffered, format="JPEG")
-        img_str = base64.b64encode(buffered.getvalue()).decode()
+        img_str = request.image
         
         html_content = f"""
         <html>

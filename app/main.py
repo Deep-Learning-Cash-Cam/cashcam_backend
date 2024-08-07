@@ -10,17 +10,14 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fastapi import FastAPI
 from app.core.config import settings
 from app.api.routes import router as api_router
-from app.ml.model import model
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up the server...")
     # Startup
-    model.load_model() # load the model
-    #TODO: connect to external api for get exchange rates 
-    # connect to the database if needed (Optional)
-    
+    #TODO: connect to external api for get exchange rates
+    #TODO: connect to the database
     yield # App running
     
     print("Shutting down the server...")
