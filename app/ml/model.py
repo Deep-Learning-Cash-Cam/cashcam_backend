@@ -2,7 +2,6 @@ from app.core.config import settings
 from ultralytics import YOLO
 import numpy as np
 from PIL import Image, ImageDraw
-import cv2
 from app.schemas.response import CurrencyInfo
 
 class MyModel:
@@ -59,7 +58,8 @@ class MyModel:
 
         for img in cropped_images:
             # Convert to RGB (YOLO expects RGB images)
-            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            #img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img_rgb = Image.fromarray(img).convert("RGB")
 
             # Perform inference on the original cropped image
             results = YOLO_model(img_rgb)

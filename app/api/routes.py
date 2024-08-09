@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from app.schemas import PredictRequest, PredictResponse, EncodedImageResponse, EncodedImageRequest
 from app.ml.model import MyModel
 from fastapi.responses import HTMLResponse, JSONResponse
+import requests
+from app.services.currency_exchange import exchange_service
 import base64
 from PIL import Image
 import io
@@ -79,3 +81,12 @@ async def show_image(request: EncodedImageRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/exchange_rates")
+def get_exchange_rates():
+    try:
+        rates = exchange_service.get_exchange_rates()
+        return {"exchange_rates": rates}
+    except requests.RequestException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
