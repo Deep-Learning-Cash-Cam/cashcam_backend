@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     PORT: int = 8000
     LOCAL_IP: str = "0.0.0.0"
     DEBUG: bool = True
+    
+    # Keys
+    EXCHANGE_RATE_API_KEY: str
 
     class Config:
         env_file = ".env"
