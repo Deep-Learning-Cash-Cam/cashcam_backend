@@ -12,7 +12,7 @@ def setup_global_logger(level=logging.INFO):
 
     # Create handlers
     file_handler = RotatingFileHandler(
-        os.path.join(log_dir, 'cashcam_log.log'), 
+        os.path.join(log_dir, 'cashcam_log.log'),
         maxBytes=10*1024*1024,  # 10MB max file size
         backupCount=4
     )

@@ -98,7 +98,7 @@ async def show_image(request: EncodedImageRequest):
 @router.get("/exchange_rates")
 def get_exchange_rates():
     try:
-        rates = exchange_service.get_exchange_rates_async()
+        rates = exchange_service.get_exchange_rates()
         return {"exchange_rates": rates}
     except requests.RequestException as e:
         log(f"Error in fetching exchange rates - {str(e)}", logging.ERROR)
