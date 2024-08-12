@@ -8,7 +8,7 @@ from app.services.currency_exchange import exchange_service
 import base64
 from PIL import Image
 import io
-from app.logs import log
+from app.logs import logger_config
 
 model = MyModel()
 router = APIRouter()
@@ -45,10 +45,10 @@ async def predict(request: PredictRequest):
         return PredictResponse(currencies=currencies, image=annotated_image_base64)
     
     except ValueError as e:
-        log(f"Error in prediction - {str(e)}", logging.ERROR)
+        logger_config.log(f"Error in prediction - {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=f"Internal error - {str(e)}")
     except Exception as e:
-        log(f"General error - {str(e)}", logging.ERROR)
+        logger_config.log(f"General error - {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=f"General error - {str(e)}")
     
 
@@ -65,7 +65,7 @@ async def upload_image(file: UploadFile = File(...)):
         img_str = base64.b64encode(Buffered.getvalue()).decode()
         return JSONResponse(content={"image": img_str}, status_code=200)
     except Exception as e:
-        log(f"Error in encoding the image - {str(e)}", logging.ERROR)
+        logger_config.log(f"Error in encoding the image - {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -84,7 +84,7 @@ async def show_image(request: EncodedImageRequest):
         """
         return HTMLResponse(content=html_content, status_code=200)
     except Exception as e:
-        log(f"Error in showing the image - {str(e)}", logging.ERROR)
+        logger_config.log(f"Error in showing the image - {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/exchange_rates")
