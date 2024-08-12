@@ -1,3 +1,19 @@
 **/__pycache__/
 /.env
 app/logs/cashcam_log*.log
+app/logs/cashcam_log.log
+share/man/man1/isympy.1
+share/man/man1/ttx.1
+
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+.venv
+pip-selfcheck.json
