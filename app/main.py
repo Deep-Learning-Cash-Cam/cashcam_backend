@@ -11,13 +11,16 @@ from fastapi import FastAPI
 from app.core.config import settings
 from app.api.routes import router as api_router
 from app.logs.logger_config import log
+import asyncio
+from app.services.currency_exchange import exchange_service
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up the server...")
     log("Server started.")
-    # Startup
+
+    asyncio.create_task(exchange_service.update_rates_daily())
     #TODO: connect to the database
     yield # App running
     

@@ -157,7 +157,8 @@ class MyModel:
             # ------- Inner function ------- #
 
             updated_currencies = {}
-            for coin_name, data in detected_currencies.items():
+            for coin_label, data in detected_currencies.items():
+                coin_name = coin_label.split("_")[0]
                 if coin_name == "NIS": # Replace NIS with ILS
                     coin_name = "ILS"
                 elif coin_name == "Unknown": # Skip unknown currencies

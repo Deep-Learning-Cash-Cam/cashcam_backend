@@ -11,7 +11,7 @@ API_KEY = settings.EXCHANGE_RATE_API_KEY
 class ExchangeRateService:
     BASE_URL = "https://v6.exchangerate-api.com/v6"
     CURRENCIES = ["EUR", "USD", "ILS"]
-    CACHE_FILE = "exchange_rates_cache.json"
+    CACHE_FILE = "app/logs/exchange_rates_cache.json"
     
     def __init__(self):
         self.rates = {}
@@ -69,9 +69,19 @@ class ExchangeRateService:
             await self.fetch_rates()
             await asyncio.sleep(24 * 60 * 60)  # Sleep for 24 hours
             
-    async def get_exchange_rates(self):
-        if not self.rates or self.last_update is None or datetime.now() - self.last_update > timedelta(days=1):
-            if not self.load_rates_from_file() or datetime.now() - self.last_update > timedelta(days=1):
+    def get_exchange_rates(self):
+        if self.should_update_rates():
+            if not self.load_rates_from_file() or self.should_update_rates():
+                log("Rates need updating, but can't fetch asynchronously. Using old rates.")
+            else:
+                log("Loaded rates from file")
+        else:
+            log("Using existing rates - No fetch needed")
+        return self.rates
+
+    async def get_exchange_rates_async(self):
+        if self.should_update_rates():
+            if not self.load_rates_from_file() or self.should_update_rates():
                 log("Fetching new exchange rates from API")
                 await self.fetch_rates()
             else:
@@ -79,5 +89,8 @@ class ExchangeRateService:
         else:
             log("Using existing rates - No fetch needed")
         return self.rates
+    
+    def should_update_rates(self):
+        return not self.rates or self.last_update is None or datetime.now() - self.last_update > timedelta(days=1)
         
 exchange_service = ExchangeRateService()

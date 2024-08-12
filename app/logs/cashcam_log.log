@@ -165,3 +165,32 @@ currencies
 2024-08-12 11:29:55,499 - cashcam - INFO - Unknown level '50': Error in calculating the return currency value - argument of type 'coroutine' is not iterable
 2024-08-12 11:29:55,499 - cashcam - INFO - Unknown level '40': Error in prediction - Error in detecting and classifying objects - argument of type 'coroutine' is not iterable
 2024-08-12 11:32:08,615 - cashcam - INFO - Unknown level '20': Server shut down.
+2024-08-12 11:40:38,974 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 11:40:38,974 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 11:40:39,265 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 11:40:39,370 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 11:40:39,471 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 11:40:39,472 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:40:44,179 - cashcam - INFO - Unknown level '20': Detected 3 objects
+2024-08-12 11:40:47,288 - cashcam - INFO - Unknown level '20': Classified 3 objects
+2024-08-12 11:40:47,299 - cashcam - INFO - Unknown level '20': Using existing rates - No fetch needed
+2024-08-12 11:40:47,300 - cashcam - INFO - Unknown level '20': Exchange rates: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:40:47,300 - cashcam - INFO - Unknown level '20': {'EUR_C_200': CurrencyInfo(quantity=1, return_currency_value=2.0), 'NIS_C_500': CurrencyInfo(quantity=1, return_currency_value=5.0)} - USD
+2024-08-12 11:40:47,300 - cashcam - INFO - Unknown level '50': Warning: No exchange rate found for EUR_C_200 to USD
+2024-08-12 11:40:47,301 - cashcam - INFO - Unknown level '50': Warning: No exchange rate found for NIS_C_500 to USD
+2024-08-12 11:40:47,301 - cashcam - INFO - Unknown level '20': Calculated exchange rates
+2024-08-12 11:40:47,301 - cashcam - INFO - Unknown level '20': Detected currencies with exchange rates added: {'EUR_C_200': CurrencyInfo(quantity=1, return_currency_value=0.0), 'NIS_C_500': CurrencyInfo(quantity=1, return_currency_value=0.0)}
+2024-08-12 11:44:27,745 - cashcam - INFO - Unknown level '20': Server shut down.
+2024-08-12 11:44:41,006 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 11:44:41,006 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 11:44:41,279 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 11:44:41,371 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 11:44:41,467 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 11:44:41,468 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:44:50,719 - cashcam - INFO - Unknown level '20': Detected 3 objects
+2024-08-12 11:44:53,986 - cashcam - INFO - Unknown level '20': Classified 3 objects
+2024-08-12 11:44:53,998 - cashcam - INFO - Unknown level '20': Using existing rates - No fetch needed
+2024-08-12 11:44:53,998 - cashcam - INFO - Unknown level '20': Exchange rates: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:44:53,999 - cashcam - INFO - Unknown level '20': {'EUR_C_200': CurrencyInfo(quantity=1, return_currency_value=2.0), 'NIS_C_500': CurrencyInfo(quantity=1, return_currency_value=5.0)} - USD
+2024-08-12 11:44:53,999 - cashcam - INFO - Unknown level '20': Calculated exchange rates
+2024-08-12 11:44:54,000 - cashcam - INFO - Unknown level '20': Detected currencies with exchange rates added: {'EUR': CurrencyInfo(quantity=1, return_currency_value=1.0916), 'ILS': CurrencyInfo(quantity=1, return_currency_value=0.2678)}
