@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     CLASSIFICATION_MODEL: str = "models/class_YOLO_model_best.pt"
     API_PREFIX: str = "/api"
     TEST_OUTPUT_PATH: str = "tests/test_output.txt"
-    PORT: int = 8000
+    PORT: int = 80
     LOCAL_IP: str = "0.0.0.0"
     DEBUG: bool = True
     

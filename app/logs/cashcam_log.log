@@ -194,3 +194,17 @@ currencies
 2024-08-12 11:44:53,999 - cashcam - INFO - Unknown level '20': {'EUR_C_200': CurrencyInfo(quantity=1, return_currency_value=2.0), 'NIS_C_500': CurrencyInfo(quantity=1, return_currency_value=5.0)} - USD
 2024-08-12 11:44:53,999 - cashcam - INFO - Unknown level '20': Calculated exchange rates
 2024-08-12 11:44:54,000 - cashcam - INFO - Unknown level '20': Detected currencies with exchange rates added: {'EUR': CurrencyInfo(quantity=1, return_currency_value=1.0916), 'ILS': CurrencyInfo(quantity=1, return_currency_value=0.2678)}
+2024-08-12 11:50:01,908 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 11:50:01,908 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 11:50:02,326 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 11:50:02,455 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 11:50:02,577 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 11:50:02,578 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:50:03,644 - cashcam - INFO - Unknown level '20': Server shut down.
+2024-08-12 11:50:21,074 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 11:50:21,074 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 11:50:21,382 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 11:50:21,505 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 11:50:21,662 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 11:50:21,663 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:50:23,819 - cashcam - INFO - Unknown level '20': Server shut down.
