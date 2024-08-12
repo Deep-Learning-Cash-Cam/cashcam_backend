@@ -9,6 +9,7 @@ import base64
 from PIL import Image
 import io
 from app.logs import log
+from app.core.config import settings
 
 model = MyModel()
 router = APIRouter()
@@ -16,7 +17,9 @@ router = APIRouter()
 @router.post("/predict", response_model=PredictResponse)
 async def predict(request: PredictRequest):
     try:
-
+        # Check that return currency is valid
+        if request.return_currency not in exchange_service.CURRENCIES:
+            raise ValueError("Invalid return currency")
         try:
             # Decode base64 image
             image_data = base64.b64decode(request.image)
@@ -54,45 +57,49 @@ async def predict(request: PredictRequest):
 
 @router.post("/encode_image" ,response_model=EncodedImageResponse)
 async def upload_image(file: UploadFile = File(...)):
-    try:
-        # Read the image
-        image = Image.open(io.BytesIO(await file.read()))
-        
-        # Convert the image to RGB and encode it to base64
-        image = image.convert("RGB")
-        Buffered = io.BytesIO()
-        image.save(Buffered, format="JPEG")
-        img_str = base64.b64encode(Buffered.getvalue()).decode()
-        return JSONResponse(content={"image": img_str}, status_code=200)
-    except Exception as e:
-        log(f"Error in encoding the image - {str(e)}", logging.ERROR)
-        raise HTTPException(status_code=500, detail=str(e))
+    if settings.DEBUG:
+        try:
+            # Read the image
+            image = Image.open(io.BytesIO(await file.read()))
+            
+            # Convert the image to RGB and encode it to base64
+            image = image.convert("RGB")
+            Buffered = io.BytesIO()
+            image.save(Buffered, format="JPEG")
+            img_str = base64.b64encode(Buffered.getvalue()).decode()
+            return JSONResponse(content={"image": img_str}, status_code=200)
+        except Exception as e:
+            log(f"Error in encoding the image - {str(e)}", logging.ERROR)
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/show_image")
 async def show_image(request: EncodedImageRequest):
-    try:
-        img_str = request.image
-        
-        html_content = f"""
-        <html>
-            <body>
-                <h1>Uploaded Image</h1>
-                <img src="data:image/jpeg;base64,{img_str}" />
-            </body>
-        </html>
-        """
-        return HTMLResponse(content=html_content, status_code=200)
-    except Exception as e:
-        log(f"Error in showing the image - {str(e)}", logging.ERROR)
-        raise HTTPException(status_code=500, detail=str(e))
+    if settings.DEBUG:
+        try:
+            img_str = request.image
+            
+            html_content = f"""
+            <html>
+                <body>
+                    <h1>Uploaded Image</h1>
+                    <img src="data:image/jpeg;base64,{img_str}" />
+                </body>
+            </html>
+            """
+            return HTMLResponse(content=html_content, status_code=200)
+        except Exception as e:
+            log(f"Error in showing the image - {str(e)}", logging.ERROR)
+            raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/exchange_rates")
 def get_exchange_rates():
     try:
-        rates = exchange_service.get_exchange_rates()
+        rates = exchange_service.get_exchange_rates_async()
         return {"exchange_rates": rates}
     except requests.RequestException as e:
+        log(f"Error in fetching exchange rates - {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
+        log(f"General error - {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=str(e))

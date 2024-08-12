@@ -3,6 +3,9 @@ from ultralytics import YOLO
 import numpy as np
 from PIL import Image, ImageDraw
 from app.schemas.response import CurrencyInfo
+from app.services.currency_exchange import exchange_service
+import logging
+from app.logs.logger_config import log
 
 class MyModel:
     object_detection_model = YOLO(settings.OBJECT_DETECTION_MODEL)
@@ -26,7 +29,7 @@ class MyModel:
         img_np = np.array(image)
 
         # Detect objects in the image
-        results = YOLO_model(image)
+        results = YOLO_model(image, verbose=False)
 
         detections = results[0].boxes.xyxy.cpu().numpy()
         classes = results[0].boxes.cls.cpu().numpy()
@@ -49,7 +52,8 @@ class MyModel:
 
             # Add to cropped_images
             cropped_images.append(cropped_img)
-
+        if settings.DEBUG:
+            log(f"Detected {len(cropped_images)} objects")
         return cropped_images, boxes_and_classes
 
     @classmethod
@@ -62,7 +66,7 @@ class MyModel:
             img_rgb = Image.fromarray(img).convert("RGB")
 
             # Perform inference on the original cropped image
-            results = YOLO_model(img_rgb)
+            results = YOLO_model(img_rgb, verbose=False)
 
             detections = results[0].boxes.xyxy.cpu().numpy()
             classes = results[0].boxes.cls.cpu().numpy()
@@ -76,6 +80,8 @@ class MyModel:
             else:
                 classified_objects.append(("Unknown", 0.0))
 
+        if settings.DEBUG:
+            log(f"Classified {len(classified_objects)} objects")
         return classified_objects
 
     @classmethod
@@ -111,28 +117,65 @@ class MyModel:
             else:
                 counts[class_name] = 1
 
-        try:
-            # Create a dictionary with the detected counts for each currency and remove any currencies with 0 counts
-            # Also swap the class names with the currency names using the currencies_dict
-            detected_currencies = {MyModel.currencies_dict.get(class_name): count for class_name, count in counts.items()}
-            detected_currencies = {k: v for k, v in detected_currencies.items() if v > 0}
-        except:
-            raise ValueError("Currency not found in currencies_dict")
-        
+        # Create a dictionary with the detected counts for each currency and remove any currencies with 0 counts
+        # Also, split the class name to the currency and the value ('0.1 NIS' -> 'NIS', (0.1, count))
+        detected_currencies = {}
+        for class_name, count in counts.items():
+            if class_name != "Unknown":
+                multiplier = class_name.split(" ")[0]
+                if class_name in cls.currencies_dict:
+                    # Transform the detected currencies to the 'currency' structure
+                    detected_currencies[cls.currencies_dict[class_name]] = CurrencyInfo(quantity= count, return_currency_value= float(multiplier))
+                else:
+                    log(f"Warning: Unknown currency class name '{class_name}'", logging.CRITICAL)
+                    continue
+                
         currencies = MyModel.calculate_return_currency_value(detected_currencies, return_currency)
+        
+        log(f"Detected currencies with exchange rates added: {currencies}")
         return currencies
     
     @classmethod
     def calculate_return_currency_value(cls, detected_currencies, return_currency):
-        currencies = {}
-        
-        #TODO: Add the conversion rates here using API
-        
-        # Transform the detected currencies to the 'currency' structure
-        for currency, count in detected_currencies.items():
-            currencies[currency] = CurrencyInfo(quantity=count, return_currency_value=1.0) # Placeholder
+        try:
+            exchange_rates = exchange_service.get_exchange_rates()
+            log(f"Exchange rates: {exchange_rates}")
+                
+            log(f"{detected_currencies} - {return_currency}")
+            
+            # ------- Inner function ------- #
+            def get_exchange_rate_inner_func(from_currency, to_currency):
+                if from_currency == to_currency:
+                    return 1.0
+                key = f"{from_currency}_{to_currency}"
+                if key in exchange_rates:
+                    return exchange_rates[key]
+                inverse_key = f"{to_currency}_{from_currency}"
+                if inverse_key in exchange_rates:
+                    return 1 / exchange_rates[inverse_key]
+                return None
+            # ------- Inner function ------- #
 
-        print(f"Detected currencies: {currencies}")
-        return currencies
+            updated_currencies = {}
+            for coin_name, data in detected_currencies.items():
+                if coin_name == "NIS": # Replace NIS with ILS
+                    coin_name = "ILS"
+                elif coin_name == "Unknown": # Skip unknown currencies
+                    updated_currencies[coin_name] = CurrencyInfo(quantity= data.quantity, return_currency_value= 0.0)
+                    continue
+                
+                rate = get_exchange_rate_inner_func(coin_name, return_currency)
+                if rate is not None:
+                    updated_currencies[coin_name] = CurrencyInfo(quantity= data.quantity, return_currency_value= data.quantity * rate)
+                else:
+                    log(f"Warning: No exchange rate found for {coin_name} to {return_currency}", logging.CRITICAL)
+                    updated_currencies[coin_name] = CurrencyInfo(quantity= data.quantity, return_currency_value= 0.0)
+
+            log(f"Calculated exchange rates")
+            return updated_currencies
+        
+        except Exception as e:
+            log(f"Error in calculating the return currency value - {str(e)}", logging.CRITICAL)
+            raise
 
 model = MyModel()

@@ -1,32 +1,33 @@
-# app/services/currency_exchange.py
-
 import logging
 import httpx
 import asyncio
+import json
+import os
 from datetime import datetime, timedelta
 from app.core.config import settings
-from app.logs import log
-
-BASE_URL = "https://v6.exchangerate-api.com/v6"
-CURRENCIES = ["EUR", "USD", "ILS"]
+from app.logs.logger_config import log
 API_KEY = settings.EXCHANGE_RATE_API_KEY
 
 class ExchangeRateService:
+    BASE_URL = "https://v6.exchangerate-api.com/v6"
+    CURRENCIES = ["EUR", "USD", "ILS"]
+    CACHE_FILE = "exchange_rates_cache.json"
+    
     def __init__(self):
         self.rates = {}
         self.last_update = None
 
     async def fetch_rates(self):
         async with httpx.AsyncClient() as client:
-            for base in CURRENCIES:
-                url = f"{BASE_URL}/{API_KEY}/latest/{base}"
+            for base in self.CURRENCIES:
+                url = f"{self.BASE_URL}/{API_KEY}/latest/{base}"
                 try:
                     response = await client.get(url)
                     response.raise_for_status()
                     data = response.json()
                     
                     if data["result"] == "success":
-                        for target in CURRENCIES:
+                        for target in self.CURRENCIES:
                             if base != target:
                                 self.rates[f"{base}_{target}"] = data["conversion_rates"][target]
                                 
@@ -40,20 +41,43 @@ class ExchangeRateService:
         
         if self.rates:
             self.last_update = datetime.now()
-            log("Exchange rates updated successfully")
+            self.save_rates_to_file()
+            log(f"Exchange rates updated successfully: {self.rates}")
         else:
             log("Failed to fetch any exchange rates", logging.CRITICAL)
-
-    async def get_exchange_rates(self):
-        if not self.rates or self.last_update is None or datetime.now() - self.last_update > timedelta(days=1):
-            log("Fetching new exchange rates")
-            await self.fetch_rates()
-        return self.rates
+        
+    def save_rates_to_file(self):
+        data = {
+            "rates": self.rates,
+            "last_update": self.last_update.isoformat() if self.last_update else None
+        }
+        with open(self.CACHE_FILE, "w") as f:
+            json.dump(data, f)
+            
+    def load_rates_from_file(self):
+        if os.path.exists(self.CACHE_FILE):
+            with open(self.CACHE_FILE, 'r') as file:
+                data = json.load(file)
+            self.rates = data["rates"]
+            self.last_update = datetime.fromisoformat(data["last_update"]) if data["last_update"] else None
+            return True
+        return False
 
     async def update_rates_daily(self):
         while True:
             log("Starting daily exchange rate update")
             await self.fetch_rates()
             await asyncio.sleep(24 * 60 * 60)  # Sleep for 24 hours
-
+            
+    async def get_exchange_rates(self):
+        if not self.rates or self.last_update is None or datetime.now() - self.last_update > timedelta(days=1):
+            if not self.load_rates_from_file() or datetime.now() - self.last_update > timedelta(days=1):
+                log("Fetching new exchange rates from API")
+                await self.fetch_rates()
+            else:
+                log("Loaded rates from file")
+        else:
+            log("Using existing rates - No fetch needed")
+        return self.rates
+        
 exchange_service = ExchangeRateService()

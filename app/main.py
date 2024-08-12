@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fastapi import FastAPI
 from app.core.config import settings
 from app.api.routes import router as api_router
-from app.logs import log
+from app.logs.logger_config import log
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
@@ -18,7 +18,6 @@ async def lifespan(app: FastAPI):
     print("Starting up the server...")
     log("Server started.")
     # Startup
-    #TODO: connect to external api for get exchange rates
     #TODO: connect to the database
     yield # App running
     
