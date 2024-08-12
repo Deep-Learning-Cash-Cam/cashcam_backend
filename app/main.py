@@ -26,7 +26,6 @@ async def lifespan(app: FastAPI):
     
     print("Shutting down the server...")
     log("Server shut down.")
-    # TODO: Shutdown logic
     # close any open connections
     # save any data that might be lost
     # shutdown the model

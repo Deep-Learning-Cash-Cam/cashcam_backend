@@ -178,10 +178,13 @@ class MyModel:
                 
                 rate = get_exchange_rate_inner_func(coin_name, return_currency)
                 if rate is not None:
-                    updated_currencies[coin_name] = CurrencyInfo(quantity= data.quantity, return_currency_value= data.quantity * rate)
+                    if coin_name == "ILS": # Replace ILS with NIS
+                        coin_name = "NIS"
+                    return_value = data.quantity * rate * data.return_currency_value
+                    updated_currencies[coin_label] = CurrencyInfo(quantity= data.quantity, return_currency_value= return_value)
                 else:
                     log(f"Warning: No exchange rate found for {coin_name} to {return_currency}", logging.CRITICAL)
-                    updated_currencies[coin_name] = CurrencyInfo(quantity= data.quantity, return_currency_value= 0.0)
+                    updated_currencies[coin_label] = CurrencyInfo(quantity= data.quantity, return_currency_value= 0.0)
 
             log(f"Calculated exchange rates")
             return updated_currencies
