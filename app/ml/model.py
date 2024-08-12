@@ -143,16 +143,18 @@ class MyModel:
                 
         currencies = MyModel.calculate_return_currency_value(detected_currencies, return_currency)
         
-        log(f"Detected currencies with exchange rates added: {currencies}")
+        if settings.DEBUG:
+            log(f"Detected currencies with exchange rates added: {currencies}")
         return currencies
     
     @classmethod
     def calculate_return_currency_value(cls, detected_currencies, return_currency):
         try:
             exchange_rates = exchange_service.get_exchange_rates()
-            log(f"Exchange rates: {exchange_rates}")
-                
-            log(f"{detected_currencies} - {return_currency}")
+            
+            if settings.DEBUG:
+                log(f"Exchange rates: {exchange_rates}")
+                log(f"Before calculating exchange rate values: {detected_currencies} - {return_currency}")
             
             # ------- Inner function ------- #
             def get_exchange_rate_inner_func(from_currency, to_currency):
@@ -180,13 +182,14 @@ class MyModel:
                 if rate is not None:
                     if coin_name == "ILS": # Replace ILS with NIS
                         coin_name = "NIS"
-                    return_value = data.quantity * rate * data.return_currency_value
+                    return_value = round(rate * data.return_currency_value, 2)
                     updated_currencies[coin_label] = CurrencyInfo(quantity= data.quantity, return_currency_value= return_value)
                 else:
                     log(f"Warning: No exchange rate found for {coin_name} to {return_currency}", logging.CRITICAL)
                     updated_currencies[coin_label] = CurrencyInfo(quantity= data.quantity, return_currency_value= 0.0)
 
-            log(f"Calculated exchange rates")
+            if settings.DEBUG:
+                log(f"Calculated exchange rates")
             return updated_currencies
         
         except Exception as e:
