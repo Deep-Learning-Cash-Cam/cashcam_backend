@@ -263,3 +263,4 @@ currencies
 2024-08-12 12:02:09,658 - cashcam - INFO - Unknown level '20': {'EUR_C_200': CurrencyInfo(quantity=1, return_currency_value=2.0), 'NIS_C_500': CurrencyInfo(quantity=1, return_currency_value=5.0)} - USD
 2024-08-12 12:02:09,658 - cashcam - INFO - Unknown level '20': Calculated exchange rates
 2024-08-12 12:02:09,659 - cashcam - INFO - Unknown level '20': Detected currencies with exchange rates added: {'EUR': CurrencyInfo(quantity=1, return_currency_value=1.0916), 'ILS': CurrencyInfo(quantity=1, return_currency_value=0.2678)}
+2024-08-12 12:03:46,243 - cashcam - INFO - Unknown level '20': Server shut down.
