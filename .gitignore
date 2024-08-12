@@ -1,6 +1,7 @@
 **/__pycache__/
 /.env
 app/logs/cashcam_log*.log
+app/logs/cashcam_log.log
 share/man/man1/isympy.1
 share/man/man1/ttx.1
 
