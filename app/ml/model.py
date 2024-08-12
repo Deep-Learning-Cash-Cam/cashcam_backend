@@ -87,11 +87,22 @@ class MyModel:
     @classmethod
     def annotate_image(cls, image, boxes_and_classes, classified_objects):
         draw = ImageDraw.Draw(image)
+        default_color = "red"
         
         for (x1, y1, x2, y2, original_class, confidence), (classified_class, class_confidence) in zip(boxes_and_classes, classified_objects):
-            # Draw the bounding box
-            draw.rectangle([x1, y1, x2, y2], outline="red", width=2)
-        
+            # Draw the bounding box (color based on the classification)
+            if classified_class != "Unknown":
+                if f"{classified_class}".split(" ")[1] == "NIS":
+                    color = "blue"
+                elif f"{classified_class}".split(" ")[1] == "Euro":
+                    color = "orange"
+                elif f"{classified_class}".split(" ")[1] == "USD":
+                    color = "green"
+            else:
+                color = default_color
+                
+            draw.rectangle([x1, y1, x2, y2], outline=color, width=2)
+            
             # Create the label
             if classified_class != "Unknown":
                 label = f"{classified_class} ({class_confidence:.2f})"
@@ -100,7 +111,7 @@ class MyModel:
         
             # Draw the label
             text_bbox = draw.textbbox((x1, y1), label)
-            draw.rectangle(text_bbox, fill="red")
+            draw.rectangle(text_bbox, fill= color)
             draw.text((x1, y1), label, fill="white")
             
         #Convert the image to PIL format

@@ -194,3 +194,72 @@ currencies
 2024-08-12 11:44:53,999 - cashcam - INFO - Unknown level '20': {'EUR_C_200': CurrencyInfo(quantity=1, return_currency_value=2.0), 'NIS_C_500': CurrencyInfo(quantity=1, return_currency_value=5.0)} - USD
 2024-08-12 11:44:53,999 - cashcam - INFO - Unknown level '20': Calculated exchange rates
 2024-08-12 11:44:54,000 - cashcam - INFO - Unknown level '20': Detected currencies with exchange rates added: {'EUR': CurrencyInfo(quantity=1, return_currency_value=1.0916), 'ILS': CurrencyInfo(quantity=1, return_currency_value=0.2678)}
+2024-08-12 11:46:27,336 - cashcam - INFO - Unknown level '20': Server shut down.
+2024-08-12 11:46:37,608 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 11:46:37,608 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 11:46:37,903 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 11:46:38,004 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 11:46:38,100 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 11:46:38,102 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:46:46,514 - cashcam - INFO - Unknown level '20': Detected 3 objects
+2024-08-12 11:46:49,491 - cashcam - INFO - Unknown level '20': Classified 3 objects
+2024-08-12 11:46:49,503 - cashcam - INFO - Unknown level '20': Using existing rates - No fetch needed
+2024-08-12 11:46:49,504 - cashcam - INFO - Unknown level '20': Exchange rates: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:46:49,504 - cashcam - INFO - Unknown level '20': {'EUR_C_200': CurrencyInfo(quantity=1, return_currency_value=2.0), 'NIS_C_500': CurrencyInfo(quantity=1, return_currency_value=5.0)} - USD
+2024-08-12 11:46:49,504 - cashcam - INFO - Unknown level '20': Calculated exchange rates
+2024-08-12 11:46:49,505 - cashcam - INFO - Unknown level '20': Detected currencies with exchange rates added: {'EUR': CurrencyInfo(quantity=1, return_currency_value=1.0916), 'ILS': CurrencyInfo(quantity=1, return_currency_value=0.2678)}
+2024-08-12 11:51:23,100 - cashcam - INFO - Unknown level '20': Server shut down.
+2024-08-12 11:51:35,682 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 11:51:35,683 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 11:51:36,225 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 11:51:36,339 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 11:51:36,436 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 11:51:36,437 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:51:44,080 - cashcam - INFO - Unknown level '20': Detected 3 objects
+2024-08-12 11:51:47,094 - cashcam - INFO - Unknown level '20': Classified 3 objects
+2024-08-12 11:51:47,097 - cashcam - INFO - Unknown level '40': Error in prediction - Error in detecting and classifying objects - list index out of range
+2024-08-12 11:54:33,346 - cashcam - INFO - Unknown level '20': Server shut down.
+2024-08-12 11:54:40,023 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 11:54:40,023 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 11:54:40,337 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 11:54:40,434 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 11:54:40,536 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 11:54:40,537 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:54:44,936 - cashcam - INFO - Unknown level '20': Detected 3 objects
+2024-08-12 11:54:47,883 - cashcam - INFO - Unknown level '20': Classified 3 objects
+2024-08-12 11:54:47,886 - cashcam - INFO - Unknown level '40': Error in prediction - Error in detecting and classifying objects - list index out of range
+2024-08-12 11:56:45,569 - cashcam - INFO - Unknown level '20': Server shut down.
+2024-08-12 11:59:09,605 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 11:59:09,606 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 11:59:09,840 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 11:59:09,947 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 11:59:10,048 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 11:59:10,050 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 11:59:19,726 - cashcam - INFO - Unknown level '20': Server shut down.
+2024-08-12 11:59:48,269 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 11:59:48,269 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 11:59:48,601 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 11:59:48,691 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 11:59:48,818 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 11:59:48,818 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 12:00:00,648 - cashcam - INFO - Unknown level '20': Detected 3 objects
+2024-08-12 12:00:03,855 - cashcam - INFO - Unknown level '20': Classified 3 objects
+2024-08-12 12:00:03,867 - cashcam - INFO - Unknown level '20': Using existing rates - No fetch needed
+2024-08-12 12:00:03,867 - cashcam - INFO - Unknown level '20': Exchange rates: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 12:00:03,868 - cashcam - INFO - Unknown level '20': {'EUR_C_200': CurrencyInfo(quantity=1, return_currency_value=2.0), 'NIS_C_500': CurrencyInfo(quantity=1, return_currency_value=5.0)} - USD
+2024-08-12 12:00:03,868 - cashcam - INFO - Unknown level '20': Calculated exchange rates
+2024-08-12 12:00:03,868 - cashcam - INFO - Unknown level '20': Detected currencies with exchange rates added: {'EUR': CurrencyInfo(quantity=1, return_currency_value=1.0916), 'ILS': CurrencyInfo(quantity=1, return_currency_value=0.2678)}
+2024-08-12 12:01:38,373 - cashcam - INFO - Unknown level '20': Server shut down.
+2024-08-12 12:01:47,756 - cashcam - INFO - Unknown level '20': Server started.
+2024-08-12 12:01:47,757 - cashcam - INFO - Unknown level '20': Starting daily exchange rate update
+2024-08-12 12:01:48,000 - cashcam - INFO - Unknown level '20': Successfully fetched rates for EUR
+2024-08-12 12:01:48,099 - cashcam - INFO - Unknown level '20': Successfully fetched rates for USD
+2024-08-12 12:01:48,200 - cashcam - INFO - Unknown level '20': Successfully fetched rates for ILS
+2024-08-12 12:01:48,201 - cashcam - INFO - Unknown level '20': Exchange rates updated successfully: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 12:02:06,657 - cashcam - INFO - Unknown level '20': Detected 3 objects
+2024-08-12 12:02:09,646 - cashcam - INFO - Unknown level '20': Classified 3 objects
+2024-08-12 12:02:09,657 - cashcam - INFO - Unknown level '20': Using existing rates - No fetch needed
+2024-08-12 12:02:09,658 - cashcam - INFO - Unknown level '20': Exchange rates: {'EUR_USD': 1.0916, 'EUR_ILS': 4.0731, 'USD_EUR': 0.9161, 'USD_ILS': 3.7345, 'ILS_EUR': 0.2455, 'ILS_USD': 0.2678}
+2024-08-12 12:02:09,658 - cashcam - INFO - Unknown level '20': {'EUR_C_200': CurrencyInfo(quantity=1, return_currency_value=2.0), 'NIS_C_500': CurrencyInfo(quantity=1, return_currency_value=5.0)} - USD
+2024-08-12 12:02:09,658 - cashcam - INFO - Unknown level '20': Calculated exchange rates
+2024-08-12 12:02:09,659 - cashcam - INFO - Unknown level '20': Detected currencies with exchange rates added: {'EUR': CurrencyInfo(quantity=1, return_currency_value=1.0916), 'ILS': CurrencyInfo(quantity=1, return_currency_value=0.2678)}

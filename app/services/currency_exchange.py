@@ -64,7 +64,8 @@ class ExchangeRateService:
         return False
 
     async def update_rates_daily(self):
-        while True:
+        # Only fetch if rates are not available or last update was more than a day ago, try to load from file first
+        if not self.rates or self.last_update is None or datetime.now() - self.last_update > timedelta(days=1):
             log("Starting daily exchange rate update")
             await self.fetch_rates()
             await asyncio.sleep(24 * 60 * 60)  # Sleep for 24 hours
