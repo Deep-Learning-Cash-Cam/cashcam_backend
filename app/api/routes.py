@@ -19,7 +19,10 @@ async def predict(request: PredictRequest):
     try:
         # Check that return currency is valid
         if request.return_currency not in exchange_service.CURRENCIES:
-            raise ValueError("Invalid return currency")
+            if request.return_currency == "NIS":
+                request.return_currency = "ILS"
+            else:
+                raise ValueError("Invalid return currency")
         try:
             # Decode base64 image
             image_data = base64.b64decode(request.image)
