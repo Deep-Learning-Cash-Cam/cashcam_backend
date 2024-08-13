@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     
     # Keys
     EXCHANGE_RATE_API_KEY: str
+    
+    # Exchange rate service
+    UPDATE_RATES_INTERVAL_HOURS: int = 6 # Update exchange rates every 6 hours
 
     class Config:
         env_file = ".env"

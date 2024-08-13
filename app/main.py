@@ -22,6 +22,11 @@ async def lifespan(app: FastAPI):
 
     asyncio.create_task(exchange_service.update_rates_daily())
     #TODO: connect to the database
+    #TODO: depencency injection to change configuration, models, etc.
+    #TODO: protect routes with authentication
+    #TODO: add google authentication and local authentication
+    #TODO: integrate db with the app
+    #TODO: add tests
     yield # App running
     
     print("Shutting down the server...")
