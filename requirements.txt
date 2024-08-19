@@ -4,8 +4,12 @@ python-dotenv
 numpy
 pydantic
 pydantic-settings
+pydantic[email]
 ultralytics
 python-multipart
 pytest
 httpx
 asyncio
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]

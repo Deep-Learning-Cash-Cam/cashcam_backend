@@ -1,6 +1,7 @@
+from logging.handlers import RotatingFileHandler
+from app.core import settings
 import logging
 import os
-from logging.handlers import RotatingFileHandler
 
 def setup_global_logger(level=logging.INFO):
     # Create logs directory if it doesn't exist (log_dir is set to the parent directory of the current file)
@@ -43,5 +44,9 @@ def log_message(logger, level, message):
 global_logger = setup_global_logger()
 
 # Function to import for logging
-def log(message, level=logging.INFO):
+def log(message, level=logging.INFO, debug=False):
+    # If debug is requested but the app is not in debug mode, don't log
+    if debug and not settings.DEBUG:
+        return
+
     log_message(global_logger, level, message)

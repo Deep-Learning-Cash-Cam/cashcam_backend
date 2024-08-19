@@ -1,18 +1,20 @@
-import logging
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from app.schemas import PredictRequest, PredictResponse, EncodedImageResponse, EncodedImageRequest
 from app.ml.model import MyModel
 from fastapi.responses import HTMLResponse, JSONResponse
-import requests
-from app.services.currency_exchange import exchange_service
-import base64
-from PIL import Image
-import io
-from app.logs import log
 from app.core.config import settings
+from app.logs import log
+
+import logging
+import requests
+import base64
+import io
 
 model = MyModel()
 router = APIRouter()
+
+# ----------------------------------------------------------- Model routes ----------------------------------------------------------- #
+from PIL import Image
 
 @router.post("/predict", response_model=PredictResponse)
 async def predict(request: PredictRequest):
@@ -74,7 +76,8 @@ async def upload_image(file: UploadFile = File(...)):
         except Exception as e:
             log(f"Error in encoding the image - {str(e)}", logging.ERROR)
             raise HTTPException(status_code=500, detail=str(e))
-
+    else:
+        raise HTTPException(status_code=404, detail="This route is only available in debug mode")
 
 @router.post("/show_image")
 async def show_image(request: EncodedImageRequest):
@@ -94,6 +97,11 @@ async def show_image(request: EncodedImageRequest):
         except Exception as e:
             log(f"Error in showing the image - {str(e)}", logging.ERROR)
             raise HTTPException(status_code=500, detail=str(e))
+    else:
+        raise HTTPException(status_code=404, detail="This route is only available in debug mode")
+
+# ----------------------------------------------------------- Exchange rates API routes ----------------------------------------------------------- #
+from app.services.currency_exchange import exchange_service
 
 @router.get("/exchange_rates")
 def get_exchange_rates():
@@ -106,3 +114,18 @@ def get_exchange_rates():
     except Exception as e:
         log(f"General error - {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=str(e))
+    
+# ----------------------------------------------------------- User routes ----------------------------------------------------------- #
+from app.schemas import user as user_schemas
+from app.db import db_api
+from app.db.database import get_db
+from sqlalchemy.orm import Session
+
+@router.post("/users/register", response_model=user_schemas.User)
+def create_user(user: user_schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = db_api.get_user_by_email(db, email=user.email)
+    if db_user: # If a user with the same email already exists
+        log(f"Failed to create user - A user with the same email already exists!")
+        raise HTTPException(status_code=400, detail="Email already registered")
+    # If the user does not exist, create a new user and return it
+    return db_api.create_user(db=db, user=user)

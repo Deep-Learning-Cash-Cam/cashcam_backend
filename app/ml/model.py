@@ -52,8 +52,8 @@ class MyModel:
 
             # Add to cropped_images
             cropped_images.append(cropped_img)
-        if settings.DEBUG:
-            log(f"Detected {len(cropped_images)} objects")
+
+        log(f"Detected {len(cropped_images)} objects", debug=True)
         return cropped_images, boxes_and_classes
 
     @classmethod
@@ -80,8 +80,7 @@ class MyModel:
             else:
                 classified_objects.append(("Unknown", 0.0))
 
-        if settings.DEBUG:
-            log(f"Classified {len(classified_objects)} objects")
+        log(f"Classified {len(classified_objects)} objects", debug=True)
         return classified_objects
 
     @classmethod
@@ -143,8 +142,7 @@ class MyModel:
                 
         currencies = MyModel.calculate_return_currency_value(detected_currencies, return_currency)
         
-        if settings.DEBUG:
-            log(f"Detected currencies with exchange rates added: {currencies}")
+        log(f"Detected currencies with exchange rates added: {currencies}", debug=True)
         return currencies
     
     @classmethod
@@ -152,9 +150,8 @@ class MyModel:
         try:
             exchange_rates = exchange_service.get_exchange_rates()
             
-            if settings.DEBUG:
-                log(f"Exchange rates: {exchange_rates}")
-                log(f"Before calculating exchange rate values: {detected_currencies} - {return_currency}")
+            log(f"Exchange rates: {exchange_rates}", debug=True)
+            log(f"Before calculating exchange rate values: {detected_currencies} - {return_currency}", debug=True)
             
             # ------- Inner function ------- #
             def get_exchange_rate_inner_func(from_currency, to_currency):
@@ -188,8 +185,7 @@ class MyModel:
                     log(f"Warning: No exchange rate found for {coin_name} to {return_currency}", logging.CRITICAL)
                     updated_currencies[coin_label] = CurrencyInfo(quantity= data.quantity, return_currency_value= 0.0)
 
-            if settings.DEBUG:
-                log(f"Calculated exchange rates")
+            log(f"Calculated exchange rates", debug=True)
             return updated_currencies
         
         except Exception as e:

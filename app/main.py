@@ -10,8 +10,11 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from fastapi import FastAPI
 from app.core.config import settings
 from app.api.routes import router as api_router
+from app.api.auth import auth_router
 from app.logs.logger_config import log
 import asyncio
+from app.db.database import engine
+from app.db import db_models
 from app.services.currency_exchange import exchange_service
 from contextlib import asynccontextmanager
 
@@ -21,8 +24,9 @@ async def lifespan(app: FastAPI):
     log("Server started.")
 
     asyncio.create_task(exchange_service.update_rates_daily())
-    #TODO: connect to the database
-    #TODO: depencency injection to change configuration, models, etc.
+    db_models.Base.metadata.create_all(bind=engine)
+    #TODO: Fix auth.py, db_api.py to allow for authentication
+    
     #TODO: protect routes with authentication
     #TODO: add google authentication and local authentication
     #TODO: integrate db with the app
@@ -37,6 +41,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan, title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
 app.include_router(api_router, prefix=settings.API_PREFIX)
+app.include_router(auth_router, prefix="/auth")
 
 @app.get("/")
 async def root():
