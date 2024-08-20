@@ -16,6 +16,8 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     role = Column(String, default="user")
+    name = Column(String)
+    google_id = Column(String, unique=True, nullable=True)
     
     images = relationship("Image", back_populates="user")
     

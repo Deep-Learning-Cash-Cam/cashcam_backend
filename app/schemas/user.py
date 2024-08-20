@@ -7,6 +7,7 @@ class UserBase(BaseModel):
 # The class for creating a new user, with a password field added to the base class
 class UserCreate(UserBase):
     password: str
+    name: str
 
 # How a user will be returned from the API
 class User(UserBase):

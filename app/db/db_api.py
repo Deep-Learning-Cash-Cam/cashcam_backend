@@ -15,12 +15,13 @@ def get_user_by_email(db: Session, email: str):
 def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(db_models.User).offset(skip).limit(limit).all()
 
+# Create a local user
 def create_user(db: Session, user: user_schemas.UserCreate):
     log("A new user is being created...", debug=True)
     
     # Hash the password and create a new user object
     hashed_password = get_password_hash(user.password)
-    db_user = db_models.User(email=user.email, hashed_password=hashed_password)
+    db_user = db_models.User(email=user.email, name=user.name ,hashed_password=hashed_password)
     
     # Add the user to the database and return the user
     db.add(db_user)
@@ -30,4 +31,4 @@ def create_user(db: Session, user: user_schemas.UserCreate):
     log(f"User created successfully! id:{db_user.id}", debug=True)
     return db_user
 
-# ----------------------------------------------------------- User api ----------------------------------------------------------- #
+# ----------------------------------------------------------- - ----------------------------------------------------------- #
