@@ -20,9 +20,9 @@ from app.logs import log
 
 class TestGetExchangeRates:
 
-    # Fetch exchange rates successfully
+    # Fetch exchange rates successfully (including NIS)
     def test_fetch_exchange_rates_successfully(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85}
+        mock_rates = {"USD": 1.0, "EUR": 0.85, "NIS": 3.5}
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
         response = get_exchange_rates()
         assert response == {"exchange_rates": mock_rates}
@@ -35,17 +35,17 @@ class TestGetExchangeRates:
         assert exc_info.value.status_code == 500
         assert "Network error" in exc_info.value.detail
 
-    # Return exchange rates in JSON format
+    # Return exchange rates in JSON format (including NIS)
     def test_return_exchange_rates_successfully(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85}
+        mock_rates = {"USD": 1.0, "EUR": 0.85, "NIS": 3.5}
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
         mocker.patch('app.api.routes.log')
         response = get_exchange_rates()
         assert response == {"exchange_rates": mock_rates}
 
-    # Log successful fetch of exchange rates
+    # Log successful fetch of exchange rates (including NIS)
     def test_log_successful_fetch_exchange_rates(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85}
+        mock_rates = {"USD": 1.0, "EUR": 0.85, "NIS": 3.5}
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
         mocker.patch('app.api.routes.log')
         response = get_exchange_rates()
@@ -83,9 +83,9 @@ class TestGetExchangeRates:
         assert exc_info.value.status_code == 500
         assert str(mock_exception) in exc_info.value.detail
 
-    # Validate response structure
+    # Validate response structure (including NIS)
     def test_validate_response_structure(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85}
+        mock_rates = {"USD": 1.0, "EUR": 0.85, "NIS": 3.5}
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
         response = get_exchange_rates()
         assert response == {"exchange_rates": mock_rates}
@@ -120,7 +120,7 @@ class TestGetExchangeRates:
 
     # Ensure no sensitive information in logs
     def test_no_sensitive_info_in_logs(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85}
+        mock_rates = {"USD": 1.0, "EUR": 0.85, "NIS": 3.5}
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
         mocker.patch("app.api.routes.requests.RequestException", Exception)
         with mocker.patch("app.api.routes.log") as mock_log:
