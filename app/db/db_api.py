@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.db import db_models
 from app.schemas import user as user_schemas
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, verify_password
 from app.logs import log
 
 # ----------------------------------------------------------- User api ----------------------------------------------------------- #
@@ -30,5 +30,19 @@ def create_user(db: Session, user: user_schemas.UserCreate):
     
     log(f"User created successfully! id:{db_user.id}", debug=True)
     return db_user
+
+# Authenticate a user upon local login (email and password)
+def authenticate_user(db: Session, email: str, password: str) -> db_models.User | None:
+    # Query the database for a user with the given email
+    user = db.query(db_models.User).filter(db_models.User.email == email).first()
+    
+    # Check if a user was found and if so, verify the password
+    if not user:
+        return None
+    
+    if not verify_password(password, user.hashed_password):
+        return None
+    
+    return user
 
 # ----------------------------------------------------------- - ----------------------------------------------------------- #

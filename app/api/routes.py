@@ -129,3 +129,4 @@ def create_user(user: user_schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
     # If the user does not exist, create a new user and return it
     return db_api.create_user(db=db, user=user)
+

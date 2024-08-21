@@ -8,6 +8,10 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
     name: str
+    
+# Used for logging in, with a password field added to the base class
+class UserLogin(UserBase):
+    password: str
 
 # How a user will be returned from the API
 class User(UserBase):

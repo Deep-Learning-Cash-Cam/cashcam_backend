@@ -47,7 +47,7 @@ app.include_router(auth_router, prefix="/auth")
 async def root():
     return {"message": "Welcome to CashCam!"}
 
-#Allows to skip this function: uvicorn app.main:app --reload and just run the main.py file
+#Allows to skip this function: 'uvicorn app.main:app --reload' and just run the main.py file
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host=settings.LOCAL_IP, port=settings.PORT, reload=True)
