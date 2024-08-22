@@ -99,10 +99,19 @@ async def show_image(request: EncodedImageRequest):
 def get_exchange_rates():
     try:
         rates = exchange_service.get_exchange_rates()
+        if rates is None:
+            log("Exchange rates not found", logging.ERROR)
+            raise HTTPException(status_code=404, detail="Exchange rates not found")
+        log("Successfully fetched exchange rates", logging.INFO)
         return {"exchange_rates": rates}
     except requests.RequestException as e:
         log(f"Error in fetching exchange rates - {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException as e:
+        # Re-raise HTTPException to avoid converting 404 to 500
+        raise e
     except Exception as e:
         log(f"General error - {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=str(e))
+
+
