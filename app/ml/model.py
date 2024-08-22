@@ -6,6 +6,7 @@ from app.schemas.response import CurrencyInfo
 from app.services.currency_exchange import exchange_service
 import logging
 from app.logs.logger_config import log
+from PIL import UnidentifiedImageError
 
 class MyModel:
     object_detection_model = YOLO(settings.OBJECT_DETECTION_MODEL)
@@ -61,19 +62,23 @@ class MyModel:
         classified_objects = []
 
         for img in cropped_images:
-            # Convert to RGB (YOLO expects RGB images)
-            #img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img_rgb = Image.fromarray(img).convert("RGB")
+            try:
+                # Convert to RGB (YOLO expects RGB images)
+                #img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                img_rgb = Image.fromarray(img).convert("RGB")
 
-            # Perform inference on the original cropped image
-            results = YOLO_model(img_rgb, verbose=False)
+                # Perform inference on the original cropped image
+                results = YOLO_model(img_rgb, verbose=False)
+            except UnidentifiedImageError:
+                classified_objects.append(("Unknown", 0.0))
+                continue
 
             detections = results[0].boxes.xyxy.cpu().numpy()
             classes = results[0].boxes.cls.cpu().numpy()
             confidences = results[0].boxes.conf.cpu().numpy()
             names = YOLO_model.names
 
-            if len(detections) > 0:
+            if len(detections) > 0 and int(classes[0]) in names:
                 class_name = names[int(classes[0])]
                 confidence = confidences[0]
                 classified_objects.append((class_name, confidence))
