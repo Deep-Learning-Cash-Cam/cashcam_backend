@@ -16,6 +16,8 @@ router = APIRouter()
 # ----------------------------------------------------------- Model routes ----------------------------------------------------------- #
 from PIL import Image
 
+# Predict an image and return the anotataed image with the detected counts
+# If a user is logged in, save image to user's images, if not, save it to the general images
 @router.post("/predict", response_model=PredictResponse)
 async def predict(request: PredictRequest):
     try:
@@ -116,17 +118,5 @@ def get_exchange_rates():
         raise HTTPException(status_code=500, detail=str(e))
     
 # ----------------------------------------------------------- User routes ----------------------------------------------------------- #
-from app.schemas import user as user_schemas
-from app.db import db_api
-from app.db.database import get_db
-from sqlalchemy.orm import Session
 
-@router.post("/users/register", response_model=user_schemas.User)
-def create_user(user: user_schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = db_api.get_user_by_email(db, email=user.email)
-    if db_user: # If a user with the same email already exists
-        log(f"Failed to create user - A user with the same email already exists!")
-        raise HTTPException(status_code=400, detail="Email already registered")
-    # If the user does not exist, create a new user and return it
-    return db_api.create_user(db=db, user=user)
-
+#TODO: ADD FLAG IMAGE ROUTE

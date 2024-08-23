@@ -11,7 +11,3 @@ class CurrencyInfo(BaseModel):
 class PredictResponse(BaseModel):
     currencies: Dict[str, CurrencyInfo]
     image: str # Base64 encoded image
-
-    
-class EncodedImageResponse(BaseModel):
-    image: str  # Base64 encoded image

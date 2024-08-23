@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 # Now we can import the FastAPI app and run it
 from fastapi import FastAPI
 from app.core.config import settings
-from app.api.routes import router as api_router
-from app.api.auth import auth_router
+from app.api.endpoints.routes import router as api_router
+from app.api.endpoints.auth import auth_router
 from app.logs.logger_config import log
 import asyncio
 from app.db.database import engine

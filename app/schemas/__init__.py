@@ -1,2 +1,2 @@
-from .request import *
-from .response import *
+from .image_schemas import *
+from .predict_schema import *

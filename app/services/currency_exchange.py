@@ -11,7 +11,7 @@ API_KEY = settings.EXCHANGE_RATE_API_KEY
 class ExchangeRateService:
     BASE_URL = "https://v6.exchangerate-api.com/v6" # API base URL
     CURRENCIES = ["EUR", "USD", "ILS"] # Currencies to fetch rates for
-    CACHE_FILE = "app/logs/exchange_rates_cache.json" # File to store the exchange rates
+    CACHE_FILE = "app/services/exchange_rates_cache.json" # Path to store the exchange rates
     
     def __init__(self):
         self.rates = {}
@@ -34,6 +34,9 @@ class ExchangeRateService:
                         for target in self.CURRENCIES:
                             if base != target:
                                 self.rates[f"{base}_{target}"] = data["conversion_rates"][target]
+                    
+                    # Update cache file
+                    self.save_rates_to_file()
                                 
                     log(f"Successfully fetched rates for {base}")
                 except httpx.HTTPStatusError as e:
@@ -45,7 +48,7 @@ class ExchangeRateService:
 
         # ----------------- If rates were fetched successfully, update the last update time and save the rates to the cache file ----------------- #
         if self.rates:
-            self.last_update = datetime.now()
+            self.last_update = settings.TIME_NOW
             self.save_rates_to_file()
             log(f"Exchange rates updated successfully: {self.rates}")
         else:
@@ -74,7 +77,7 @@ class ExchangeRateService:
     async def update_rates_daily(self):
         # Only fetch if rates are not available or last update was more UPDATE_RATES_INTERVAL_HOURS, try to load from file first
         while True:
-            if not self.rates or self.last_update is None or datetime.now() - self.last_update > timedelta(hours=settings.UPDATE_RATES_INTERVAL_HOURS):
+            if not self.rates or self.last_update is None or settings.TIME_NOW - self.last_update > timedelta(hours=settings.UPDATE_RATES_INTERVAL_HOURS):
                 log("Starting daily exchange rate update")
                 await self.fetch_rates()
 
@@ -94,6 +97,6 @@ class ExchangeRateService:
 
     # Should we update the rates based on last update time. Boolean function
     def should_update_rates(self):
-        return not self.rates or self.last_update is None or datetime.now() - self.last_update > timedelta(days=1)
+        return not self.rates or self.last_update is None or settings.TIME_NOW - self.last_update > timedelta(days=1)
 
 exchange_service = ExchangeRateService()

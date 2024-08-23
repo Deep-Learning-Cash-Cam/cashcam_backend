@@ -3,7 +3,7 @@ from app.core import settings
 import logging
 import os
 
-def setup_global_logger(level=logging.INFO):
+def setup_global_logger(level=logging.INFO, maxBytes= 10*1024*1024, backupCount=4):
     # Create logs directory if it doesn't exist (log_dir is set to the parent directory of the current file)
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
     os.makedirs(log_dir, exist_ok=True)
@@ -14,8 +14,8 @@ def setup_global_logger(level=logging.INFO):
     # Create handlers
     file_handler = RotatingFileHandler(
         os.path.join(log_dir, 'cashcam_log.log'),
-        maxBytes=10*1024*1024,  # 10MB max file size
-        backupCount=4
+        maxBytes= maxBytes,  # 10MB max file size
+        backupCount= backupCount
     )
     file_handler.setFormatter(formatter)
 

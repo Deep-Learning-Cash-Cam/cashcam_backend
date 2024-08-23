@@ -2,7 +2,7 @@ from app.core.config import settings
 from ultralytics import YOLO
 import numpy as np
 from PIL import Image, ImageDraw
-from app.schemas.response import CurrencyInfo
+from app.schemas.predict_schema import CurrencyInfo
 from app.services.currency_exchange import exchange_service
 import logging
 from app.logs.logger_config import log

@@ -18,7 +18,9 @@ class Settings(BaseSettings):
     
     # JWT
     JWT_SECRET_KEY: str
+    JWT_REFRESH_SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15 # Used by JWT to check if the token is expired
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30 # Used by JWT to check if the token is expired
     JWT_ALGORITHM: str = "HS256"
     
     # Google OAuth2
