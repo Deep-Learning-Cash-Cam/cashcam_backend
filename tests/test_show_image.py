@@ -76,7 +76,7 @@ def test_handles_empty_image_string(mocker):
 
     assert response.status_code == 500
 
-# Debug mode False true, expect HTTP 200
+# Debug mode False, expect HTTP 200
 def test_show_image_debug_false(mocker):
     mocker.patch.object(settings, 'DEBUG', False)
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
