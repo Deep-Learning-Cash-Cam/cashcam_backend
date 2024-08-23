@@ -95,17 +95,18 @@ class MyModel:
         default_color = "red"
         
         for (x1, y1, x2, y2, original_class, confidence), (classified_class, class_confidence) in zip(boxes_and_classes, classified_objects):
+            color = default_color  # Initialize color with default value
+            
             # Draw the bounding box (color based on the classification)
             if classified_class != "Unknown":
-                if f"{classified_class}".split(" ")[1] == "NIS":
+                parts = classified_class.split(" ")
+                if len(parts) > 1 and parts[1] == "NIS":
                     color = "blue"
-                elif f"{classified_class}".split(" ")[1] == "Euro":
+                elif len(parts) > 1 and parts[1] == "Euro":
                     color = "orange"
-                elif f"{classified_class}".split(" ")[1] == "USD":
+                elif len(parts) > 1 and parts[1] == "USD":
                     color = "green"
-            else:
-                color = default_color
-                
+            
             draw.rectangle([x1, y1, x2, y2], outline=color, width=2)
             
             # Create the label
@@ -116,13 +117,14 @@ class MyModel:
         
             # Draw the label
             text_bbox = draw.textbbox((x1, y1), label)
-            draw.rectangle(text_bbox, fill= color)
+            draw.rectangle(text_bbox, fill=color)
             draw.text((x1, y1), label, fill="white")
-            
-        #Convert the image to PIL format
+        
+        # Convert the image to PIL format
         image = Image.fromarray(np.array(image))
         
         return image
+
 
     @classmethod
     def get_detected_counts(cls, classified_objects, return_currency):

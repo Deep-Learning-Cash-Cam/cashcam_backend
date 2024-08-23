@@ -29,7 +29,7 @@ class TestSetupGlobalLogger:
         mock_makedirs.assert_called_once()
 
     # Log messages are written to the file 'cashcam_log.log'
-    def test_log_messages_written_to_file(self, mocker, log_dir):###
+    def test_log_messages_written_to_file(self, mocker, log_dir):  ### TODO - Fix this test
         mock_makedirs = mocker.patch('app.logs.logger_config.os.makedirs')
         mock_file_handler = mocker.patch('app.logs.logger_config.logging.handlers.RotatingFileHandler')
         mock_file_handler.return_value = mocker.Mock() 
@@ -56,7 +56,7 @@ class TestSetupGlobalLogger:
         mock_file_handler.return_value.setFormatter.assert_called_once_with(mock_formatter.return_value)
 
     # MaxBytes is set to 0 (no rollover)
-    def test_maxbytes_set_to_zero(self, mocker, log_dir):###
+    def test_maxbytes_set_to_zero(self, mocker, log_dir):  ### TODO - Fix this test
         mock_file_handler = mocker.patch('app.logs.logger_config.logging.handlers.RotatingFileHandler')
         mock_file_handler.return_value = mocker.Mock()  # Ensure it has return_value
 
@@ -69,7 +69,7 @@ class TestSetupGlobalLogger:
         )
 
     # BackupCount is set to 0 (no backup files)
-    def test_backup_count_zero(self, mocker, log_dir):###
+    def test_backup_count_zero(self, mocker, log_dir):  ### TODO - Fix this test
         mock_file_handler = mocker.patch('app.logs.logger_config.logging.handlers.RotatingFileHandler')
         mock_file_handler.return_value = mocker.Mock()  # Ensure it has return_value
 

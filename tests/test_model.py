@@ -1,5 +1,5 @@
 import pytest
-from PIL import Image
+from PIL import Image, ImageDraw
 import numpy as np
 from app.ml.model import MyModel
 from app.core.config import settings
@@ -172,7 +172,7 @@ def test_classify_objects_with_various_inputs(mock_yolo_model, cropped_images, e
     result = MyModel.classify_objects(mock_yolo_model, cropped_images)
     assert result == expected_result
 
-def test_classify_objects_logs_correct_number_when_debug_enabled(mocker, mock_yolo_model):
+def test_classify_objects_logs_correct_number_when_debug_enabled(mocker, mock_yolo_model):  ### TODO - Fix this test
     settings.DEBUG = True  # Ensure debug mode is enabled
     cropped_images = [np.zeros((100, 100, 3), dtype=np.uint8)]  # Create dummy images
 
@@ -215,3 +215,116 @@ def test_classify_objects_with_various_image_sizes(mock_yolo_model, image_shape,
     
     result = MyModel.classify_objects(mock_yolo_model, cropped_images)
     assert result == expected_result
+
+
+#---------------------------------------------------- annotate_image ----------------------------------------------------#
+
+
+@pytest.fixture
+def blank_image():
+    return Image.new('RGB', (100, 100), color='white')
+
+@pytest.fixture
+def high_res_image():
+    return Image.new('RGB', (1920, 1080), color='white')
+
+class TestAnnotateImage:
+
+    # Check for color assignment and correct drawing for known classes
+    def test_annotate_image_known_classes(self, blank_image):  ### TODO - Fix this test
+        boxes_and_classes = [(10, 10, 50, 50, 'Currency', 0.9)]
+        classified_objects = [('USD Dollar', 0.95)]
+
+        annotated_image = MyModel.annotate_image(blank_image, boxes_and_classes, classified_objects)
+        annotated_array = np.array(annotated_image)
+
+        # Ensure image has been drawn on
+        assert not np.all(annotated_array == 255)
+
+        # Assert specific pixel colors (bounding box color for USD should be green)
+        assert (annotated_array[15, 15] == [0, 128, 0]).all()  # Example check for green
+
+    # Check for correct handling of "Unknown" classes
+    def test_annotate_image_unknown_class(self, blank_image):
+        boxes_and_classes = [(10, 10, 50, 50, 'Currency', 0.9)]
+        classified_objects = [('Unknown', 0.0)]
+
+        annotated_image = MyModel.annotate_image(blank_image, boxes_and_classes, classified_objects)
+        annotated_array = np.array(annotated_image)
+
+        assert not np.all(annotated_array == 255)
+
+        # Check that the color is red for "Unknown"
+        assert (annotated_array[15, 15] == [255, 0, 0]).all()
+
+    # Check for currency-specific color assignments
+    def test_annotate_image_currency_colors(self, blank_image):  ### TODO - Fix this test
+        boxes_and_classes = [(10, 10, 50, 50, 'Currency', 0.9)]
+        classified_objects = [('Euro', 0.95)]
+
+        annotated_image = MyModel.annotate_image(blank_image, boxes_and_classes, classified_objects)
+        annotated_array = np.array(annotated_image)
+
+        assert not np.all(annotated_array == 255)
+
+        # Check that the color is orange for Euro
+        assert (annotated_array[15, 15] == [255, 165, 0]).all()
+
+    # Ensure correct handling of multiple objects in an image
+    def test_annotate_image_multiple_objects(self, blank_image):  ### TODO - Fix this test
+        boxes_and_classes = [
+            (10, 10, 50, 50, 'Currency', 0.9),
+            (20, 20, 60, 60, 'Currency', 0.8)
+        ]
+        classified_objects = [('USD Dollar', 0.95), ('Euro', 0.85)]
+
+        annotated_image = MyModel.annotate_image(blank_image, boxes_and_classes, classified_objects)
+        annotated_array = np.array(annotated_image)
+
+        assert not np.all(annotated_array == 255)
+
+        # Assert two colors exist (green and orange)
+        assert (annotated_array[15, 15] == [0, 128, 0]).all()  # Green for USD
+        assert (annotated_array[25, 25] == [255, 165, 0]).all()  # Orange for Euro
+
+    # Test for cases where the classified_class does not have a space
+    def test_annotate_image_classified_class_no_space(self, blank_image):
+        boxes_and_classes = [(10, 10, 50, 50, 'Currency', 0.9)]
+        classified_objects = [('USDDollar', 0.95)]
+
+        annotated_image = MyModel.annotate_image(blank_image, boxes_and_classes, classified_objects)
+        annotated_array = np.array(annotated_image)
+
+        assert not np.all(annotated_array == 255)
+
+    # Test performance on high-resolution images
+    def test_annotate_image_high_resolution(self, high_res_image):
+        boxes_and_classes = [(100, 100, 500, 500, 'Currency', 0.9)]
+        classified_objects = [('USD Dollar', 0.95)]
+
+        annotated_image = MyModel.annotate_image(high_res_image, boxes_and_classes, classified_objects)
+        annotated_array = np.array(annotated_image)
+
+        assert not np.all(annotated_array == 255)
+
+    # Ensure method handles images without classified objects gracefully
+    def test_annotate_image_no_classified_objects(self, blank_image):
+        boxes_and_classes = []
+        classified_objects = []
+
+        annotated_image = MyModel.annotate_image(blank_image, boxes_and_classes, classified_objects)
+        annotated_array = np.array(annotated_image)
+
+        assert np.all(annotated_array == 255)  # Image should remain blank
+
+    # Verifies that labels are formatted correctly
+    def test_annotate_image_label_formatting(self, blank_image):
+        boxes_and_classes = [(10, 10, 50, 50, 'Currency', 0.9)]
+        classified_objects = [('USD Dollar', 0.95)]
+
+        annotated_image = MyModel.annotate_image(blank_image, boxes_and_classes, classified_objects)
+        annotated_array = np.array(annotated_image)
+
+        assert not np.all(annotated_array == 255)
+
+        # Mocking actual text drawing can be done if needed
