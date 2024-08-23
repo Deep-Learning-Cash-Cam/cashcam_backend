@@ -82,6 +82,12 @@ async def show_image(request: EncodedImageRequest):
         try:
             img_str = request.image
             
+            # Check if the base64 string is empty
+            if not img_str:
+                raise ValueError("Empty base64 string")
+            # Try to decode the base64 string to ensure it's valid
+            base64.b64decode(img_str)  # This will raise an exception if the string is invalid
+            
             html_content = f"""
             <html>
                 <body>
