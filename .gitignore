@@ -21,3 +21,6 @@ pyvenv.cfg
 .venv
 pip-selfcheck.json
 venv/
+
+# Database files
+*.db
