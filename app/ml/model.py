@@ -100,13 +100,16 @@ class MyModel:
             # Draw the bounding box (color based on the classification)
             if classified_class != "Unknown":
                 parts = classified_class.split(" ")
-                if len(parts) > 1 and parts[1] == "NIS":
+                if parts[0] == "NIS":
                     color = "blue"
-                elif len(parts) > 1 and parts[1] == "Euro":
+                elif parts[0] == "Euro":
                     color = "orange"
-                elif len(parts) > 1 and parts[1] == "USD":
+                elif parts[0] == "USD":
                     color = "green"
             
+            # Print statement for debugging
+            print(f"Classified: {classified_class}, Color: {color}, Box: ({x1}, {y1}, {x2}, {y2})")
+
             draw.rectangle([x1, y1, x2, y2], outline=color, width=2)
             
             # Create the label
@@ -119,12 +122,13 @@ class MyModel:
             text_bbox = draw.textbbox((x1, y1), label)
             draw.rectangle(text_bbox, fill=color)
             draw.text((x1, y1), label, fill="white")
+
+            print(f"Drawing bounding box for {classified_class} from {(x1, y1)} to {(x2, y2)}")
         
         # Convert the image to PIL format
         image = Image.fromarray(np.array(image))
         
         return image
-
 
     @classmethod
     def get_detected_counts(cls, classified_objects, return_currency):
