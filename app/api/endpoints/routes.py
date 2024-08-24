@@ -1,9 +1,12 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
+from app.api.dependencies import get_current_user_by_token
+from app.db.database import get_db
 from app.schemas import PredictRequest, PredictResponse, EncodedImageResponse, EncodedImageRequest
 from app.ml.model import MyModel
 from fastapi.responses import HTMLResponse, JSONResponse
 from app.core.config import settings
 from app.logs import log
+from app.db import crud
 
 import logging
 import requests
@@ -19,7 +22,8 @@ from PIL import Image
 # Predict an image and return the anotataed image with the detected counts
 # If a user is logged in, save image to user's images, if not, save it to the general images
 @router.post("/predict", response_model=PredictResponse)
-async def predict(request: PredictRequest):
+async def predict(request: PredictRequest, user= Depends(get_current_user_by_token), db: requests.Session = Depends(get_db)):
+    
     try:
         # Check that return currency is valid
         if request.return_currency not in exchange_service.CURRENCIES:
@@ -51,6 +55,15 @@ async def predict(request: PredictRequest):
             annotated_image_base64 = base64.b64encode(buffered.getvalue()).decode()
         except Exception as e:
             raise ValueError(f"Error in encoding the image - {str(e)}")
+        
+        
+        # Save the image to the user's images
+        try:
+            if user:
+                user_id = user.id
+                crud.save_image(db, annotated_image_base64, user_id)
+        except Exception as e:
+            log(f"Error in saving the image - {str(e)}", logging.ERROR)
         
         return PredictResponse(currencies=currencies, image=annotated_image_base64)
     

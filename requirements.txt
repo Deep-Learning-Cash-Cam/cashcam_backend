@@ -1,5 +1,8 @@
 fastapi
+authlib
 uvicorn
+starlette
+itsdangerous
 python-dotenv
 numpy
 pydantic
@@ -11,5 +14,6 @@ pytest
 httpx
 asyncio
 sqlalchemy
-passlib[bcrypt]
+bcrypt==4.0.1
+passlib
 python-jose[cryptography]

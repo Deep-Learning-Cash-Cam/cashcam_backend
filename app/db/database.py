@@ -15,10 +15,8 @@ Base = declarative_base()
 def get_db():
     db = SessionLocal()
     try:
-        log("Database connection established", debug=True)
         yield db # Access db (dependency injection)
     except Exception as e:
         log(f"Error in database connection - {str(e)}")
     finally:
         db.close()
-        log("Database connection closed", debug=True)

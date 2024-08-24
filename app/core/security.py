@@ -86,7 +86,6 @@ def create_tokens(data: dict) -> Tuple[str, str]:
     refresh_token = create_refresh_token(data)
     log("Access and refresh tokens created successfully", logging.INFO, debug=True)
     return access_token, refresh_token
-    
 
 # Verify a password against a hashed password
 def verify_password(plain_password, hashed_password):
