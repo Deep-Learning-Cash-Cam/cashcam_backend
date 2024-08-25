@@ -79,7 +79,7 @@ class ExchangeRateService:
         if not self.rates or self.last_update is None or datetime.now() - self.last_update > timedelta(days=1):
             log("Starting daily exchange rate update")
             await self.fetch_rates()
-            await asyncio.sleep(24 * 60 * 60)  # Sleep for 24 hours
+            await asyncio.sleep(24 * 60 * 60 * 7)  # Sleep for 24 hours
             
     # ----------------- Get exchange rates from the cache file or fetch them if needed ----------------- #
     # The endpoint function to use to get the exchange rates

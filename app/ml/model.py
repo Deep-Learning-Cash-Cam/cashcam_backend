@@ -93,41 +93,38 @@ class MyModel:
     def annotate_image(cls, image, boxes_and_classes, classified_objects):
         draw = ImageDraw.Draw(image)
         default_color = "red"
-        
+
         for (x1, y1, x2, y2, original_class, confidence), (classified_class, class_confidence) in zip(boxes_and_classes, classified_objects):
             color = default_color  # Initialize color with default value
-            
+
             # Draw the bounding box (color based on the classification)
             if classified_class != "Unknown":
-                parts = classified_class.split(" ")
-                if parts[0] == "NIS":
+                if "NIS" in classified_class:
                     color = "blue"
-                elif parts[0] == "Euro":
+                elif "Euro" in classified_class:
                     color = "orange"
-                elif parts[0] == "USD":
+                elif "USD" in classified_class:
                     color = "green"
-            
-            # Print statement for debugging
+
+            # Debugging print statement
             print(f"Classified: {classified_class}, Color: {color}, Box: ({x1}, {y1}, {x2}, {y2})")
 
             draw.rectangle([x1, y1, x2, y2], outline=color, width=2)
-            
+
             # Create the label
             if classified_class != "Unknown":
                 label = f"{classified_class} ({class_confidence:.2f})"
             else:
                 label = f"{original_class} ({confidence:.2f}) - Unknown"
-        
+
             # Draw the label
             text_bbox = draw.textbbox((x1, y1), label)
             draw.rectangle(text_bbox, fill=color)
             draw.text((x1, y1), label, fill="white")
 
             print(f"Drawing bounding box for {classified_class} from {(x1, y1)} to {(x2, y2)}")
-        
-        # Convert the image to PIL format
+
         image = Image.fromarray(np.array(image))
-        
         return image
 
     @classmethod
