@@ -8,8 +8,10 @@ from app.services.currency_exchange import exchange_service
 import base64
 from PIL import Image
 import io
-from app.logs import log
+from app.logs.logger_config import log
 from app.core.config import settings
+from fastapi.responses import HTMLResponse
+from PIL import UnidentifiedImageError
 
 model = MyModel()
 router = APIRouter()
@@ -67,10 +69,14 @@ async def upload_image(file: UploadFile = File(...)):
             
             # Convert the image to RGB and encode it to base64
             image = image.convert("RGB")
-            Buffered = io.BytesIO()
-            image.save(Buffered, format="JPEG")
-            img_str = base64.b64encode(Buffered.getvalue()).decode()
+            buffered = io.BytesIO()
+            image.save(buffered, format="JPEG")
+            img_str = base64.b64encode(buffered.getvalue()).decode()
             return JSONResponse(content={"image": img_str}, status_code=200)
+        except UnidentifiedImageError as e:
+            # Return a specific message for unidentified images
+            log(f"Error in encoding the image - {str(e)}", logging.ERROR)
+            raise HTTPException(status_code=400, detail="Uploaded file is not an image")
         except Exception as e:
             log(f"Error in encoding the image - {str(e)}", logging.ERROR)
             raise HTTPException(status_code=500, detail=str(e))
@@ -85,6 +91,7 @@ async def show_image(request: EncodedImageRequest):
             # Check if the base64 string is empty
             if not img_str:
                 raise ValueError("Empty base64 string")
+            
             # Try to decode the base64 string to ensure it's valid
             base64.b64decode(img_str)  # This will raise an exception if the string is invalid
             

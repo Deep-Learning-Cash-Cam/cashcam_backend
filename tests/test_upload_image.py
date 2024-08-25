@@ -1,4 +1,5 @@
 import logging
+import re
 from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
@@ -6,6 +7,7 @@ from io import BytesIO
 from PIL import Image
 from app.core.config import Settings
 from app.main import app
+
 
 client = TestClient(app)
 
@@ -28,10 +30,24 @@ def test_successful_upload_and_encode_image():
 def test_upload_non_image_file():
     non_image_file = BytesIO(b"this is not an image")
 
-    response = client.post("/api/encode_image", files={"file": ("test.txt", non_image_file, "text/plain")})
+    with patch("app.logs.logger_config.global_logger") as mock_logger:
+        # Configure mock logger's level to match your logger's expected behavior
+        mock_logger.level = logging.INFO
+        
+        # Ensure the mock logger has a handler with a level attribute
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.INFO)
+        mock_logger.addHandler(handler)
 
-    assert response.status_code == 500
-    assert "cannot identify image file" in response.json()["detail"]
+        response = client.post("/api/encode_image", files={"file": ("test.txt", non_image_file, "text/plain")})
+
+        assert response.status_code == 400
+        assert response.json() == {"detail": "Uploaded file is not an image"}
+
+        # Verify that an error was logged, allowing for varying memory address
+        expected_message = "Error in encoding the image - cannot identify image file"
+        actual_message = mock_logger.error.call_args[0][0]
+        assert re.match(f"{expected_message} .*", actual_message)
         
 
 # Handle image conversion to RGB format correctly
@@ -70,7 +86,7 @@ def test_return_base64_encoded_image():
     assert response.status_code == 200
     assert "image" in response.json()
 
-# Handle corrupted image files without crashing
+# Handle corrupted image files without crashing##############################
 def test_handle_corrupted_image():
     corrupted_data = b'corrupted_image_data'
     buffered = BytesIO(corrupted_data)

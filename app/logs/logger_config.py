@@ -44,4 +44,6 @@ global_logger = setup_global_logger()
 
 # Function to import for logging
 def log(message, level=logging.INFO):
+    if isinstance(level, int):
+        level = logging.getLevelName(level)
     log_message(global_logger, level, message)
