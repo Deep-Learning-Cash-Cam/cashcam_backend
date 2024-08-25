@@ -6,7 +6,8 @@ from unittest.mock import patch
 from fastapi import HTTPException
 import logging
 from app.main import app
-
+from app.logs.logger_config import log  # Import the log function
+from app.logs.logger_config import global_logger
 client = TestClient(app)
 
 
@@ -27,11 +28,18 @@ def test_handles_invalid_base64_image_string(mocker):
     mocker.patch.object(settings, 'DEBUG', True)
     img_str = "invalid_base64_string"
     request_data = EncodedImageRequest(image=img_str)
-
+    
+    # Optionally patch the log function, but ensure the level is an integer
+    mock_log = mocker.patch("app.api.routes.log")
+    
+    # Make the POST request to the endpoint
     response = client.post("/api/show_image", json=request_data.dict())
-
     assert response.status_code == 500
     assert response.json() == {"detail": "Incorrect padding"}
+    
+    # Check that the log was called with the expected level (logging.ERROR, which is 40)
+    mock_log.assert_called_once_with("Error in showing the image - Incorrect padding", logging.ERROR)
+
 
 
 # Returns status code 200 for valid image input
@@ -55,7 +63,7 @@ def test_correctly_processes_valid_base64_image(mocker):
     assert response.status_code == 200
     assert "<img src=\"data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA\"" in response.text
 
-# Returns HTTP 500 on general exception##########################################
+# Returns HTTP 500 on general exception
 def test_returns_http_500_on_exception(mocker):
     mocker.patch.object(settings, 'DEBUG', True)
     img_str = "invalid_base64_string"  # Intentionally invalid base64 string
@@ -67,14 +75,25 @@ def test_returns_http_500_on_exception(mocker):
         assert response.status_code == 500
 
 # Handles an empty image string
-def test_handles_empty_image_string(mocker):
+def test_handles_empty_image_string(mocker, caplog):
+    # Mock settings.DEBUG to be True
     mocker.patch.object(settings, 'DEBUG', True)
+
+    # Mock the logger's error method specifically
+    mock_error = mocker.patch('app.logs.logger_config.global_logger.error')
+
     img_str = ""  # Empty base64 string
     request_data = EncodedImageRequest(image=img_str)
 
-    response = client.post("/api/show_image", json=request_data.dict())
+    # Perform the post request
+    with caplog.at_level(logging.ERROR):
+        response = client.post("/api/show_image", json=request_data.dict())
 
-    assert response.status_code == 500
+    # Ensure that the error method was called with the expected message
+    mock_error.assert_called_with("Error in showing the image - Empty base64 string")
+
+
+
 
 # Debug mode False, expect HTTP 200
 def test_show_image_debug_false(mocker):
