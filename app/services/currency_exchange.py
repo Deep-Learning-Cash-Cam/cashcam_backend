@@ -34,7 +34,10 @@ class ExchangeRateService:
                         for target in self.CURRENCIES:
                             if base != target:
                                 self.rates[f"{base}_{target}"] = data["conversion_rates"][target]
-                                
+
+                    # Update cache file
+                    self.save_rates_to_file()
+
                     log(f"Successfully fetched rates for {base}")
                 except httpx.HTTPStatusError as e:
                     log(f"HTTP error occurred while fetching rates for {base}: {str(e)}", logging.ERROR)
