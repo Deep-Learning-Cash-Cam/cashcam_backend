@@ -39,6 +39,7 @@ def log_message(logger, level, message):
         logger.critical(message)
     else:
         logger.info(f"Unknown level '{level}': {message}")
+    print(message)
         
 # Set up the global logger object
 global_logger = setup_global_logger()
