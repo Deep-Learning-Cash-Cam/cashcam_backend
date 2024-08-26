@@ -593,7 +593,7 @@ class TestCalculateReturnCurrencyValue:
             assert "Calculated exchange rates" in caplog.text
 
     # Test for missing exchange rates handling with log warning
-    def test_logs_warning_no_exchange_rate(self, mocker, caplog):  ### TODO - Fix this test
+    def test_logs_warning_no_exchange_rate(self, mocker, caplog):
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value={})
         mocker.patch.object(settings, 'DEBUG', False)
 
@@ -633,7 +633,7 @@ class TestCalculateReturnCurrencyValue:
         assert result == expected_result
 
     # Test exception handling and logging errors
-    def test_exception_handling(self, mocker, caplog):  ### TODO - Fix this test
+    def test_exception_handling(self, mocker, caplog):
         mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=Exception("Mocked exception"))
         mocker.patch.object(settings, 'DEBUG', False)
 
@@ -766,31 +766,45 @@ class TestMyModel:
         # Check the text drawing arguments
         mock_draw.text.assert_called_with((10, 10), 'NIS_C_10 (0.90)', fill='white')
 
-    def test_log_messages_debug_enabled(self, mocker):  ### TODO - Fix this test
+    def test_log_messages_debug_enabled(self, mocker):
         # Mock settings.DEBUG to True
         mocker.patch('app.core.config.settings.DEBUG', True)
 
         # Mock the log function
         mock_log = mocker.patch('app.ml.model.log')
 
-        # Mock the YOLO model and image
-        mock_yolo_model = mocker.Mock()
-        mock_image = mocker.Mock()
+        # Mock YOLO model and its response with zero detections
+        YOLO_model = mocker.Mock()
+        YOLO_model.names = {}
+        boxes_mock = mocker.Mock()
+        boxes_mock.xyxy.cpu().numpy.return_value = np.array([])  # No detections
+        boxes_mock.cls.cpu().numpy.return_value = np.array([])
+        boxes_mock.conf.cpu().numpy.return_value = np.array([])
+
+        # Simulate the results object with zero detections
+        results_mock = mocker.Mock()
+        results_mock.boxes = boxes_mock
+        YOLO_model.return_value = [results_mock]  # List-like behavior with a single item
+
+        # Create a dummy image
+        image = Image.new('RGB', (100, 100))
 
         # Call the method under test
-        cropped_images, boxes_and_classes = MyModel.detect_and_collect_objects(mock_yolo_model, mock_image)
+        cropped_images, boxes_and_classes = MyModel.detect_and_collect_objects(YOLO_model, image)
 
         # Assertions
         mock_log.assert_called_once_with("Detected 0 objects")
 
-    def test_calculate_return_currency_value(self, mocker):  ### TODO - Fix this test
+    def test_calculate_return_currency_value(self, mocker):
         # Mock the exchange service
         mock_exchange_service = mocker.MagicMock()
         mock_exchange_service.get_exchange_rates.return_value = {
-            'USD_EUR': 0.85,
-            'EUR_USD': 1.18,
-            'USD_ILS': 3.21,
-            'ILS_USD': 0.31
+            'EUR_USD': 1.1162,
+            'EUR_ILS': 4.1228,
+            'USD_EUR': 0.8959,
+            'USD_ILS': 3.6947,
+            'ILS_EUR': 0.2426,
+            'ILS_USD': 0.2705
         }
 
         # Mock the detected currencies
@@ -805,17 +819,21 @@ class TestMyModel:
         updated_currencies = MyModel.calculate_return_currency_value(detected_currencies, 'USD')
 
         # Assertions
-        assert updated_currencies['NIS_C_10'].return_currency_value == 0.31
-        assert updated_currencies['EUR_C_5'].return_currency_value == 0.04
-        assert updated_currencies['USD_C_50'].return_currency_value == 1.5
+        assert updated_currencies['NIS_C_10'].return_currency_value == 0.03
+        assert updated_currencies['EUR_C_5'].return_currency_value == 0.06
+        assert updated_currencies['USD_C_50'].return_currency_value == 0.5
         assert updated_currencies['Unknown'].return_currency_value == 0.0
 
-    def test_handle_unidentified_images(self, mocker):  ### TODO - Fix this test
-        # Mock the YOLO model to raise UnidentifiedImageError
-        mock_yolo_model = mocker.Mock(side_effect=UnidentifiedImageError)
+    def test_handle_unidentified_images(self, mocker):
+        # Mock the YOLO model
+        mock_yolo_model = mocker.Mock()
+        
+        # Mock Image conversion to raise UnidentifiedImageError
+        mocker.patch("PIL.Image.fromarray", side_effect=UnidentifiedImageError)
 
-        # Call the method under test
-        cropped_images, classified_objects = MyModel.classify_objects(mock_yolo_model, [])
+        # Call the method under test with a dummy image
+        cropped_images = [np.zeros((100, 100, 3), dtype=np.uint8)]  # Dummy image
+        classified_objects = MyModel.classify_objects(mock_yolo_model, cropped_images)
 
         # Assertions
         assert classified_objects == [("Unknown", 0.0)]

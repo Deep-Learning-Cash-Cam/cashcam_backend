@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     print("Starting up the server...")
     log("Server started.")
 
-    asyncio.create_task(exchange_service.update_rates_daily())
+    #asyncio.create_task(exchange_service.update_rates_daily())
     #TODO: connect to the database
     yield # App running
     
