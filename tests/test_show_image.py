@@ -33,7 +33,7 @@ def test_handles_invalid_base64_image_string(mocker):
     mock_log = mocker.patch("app.api.routes.log")
     
     # Make the POST request to the endpoint
-    response = client.post("/api/show_image", json=request_data.dict())
+    response = client.post("/api/show_image", json=request_data.model_dump())
     assert response.status_code == 500
     assert response.json() == {"detail": "Incorrect padding"}
     
@@ -48,7 +48,7 @@ def test_returns_status_code_200_for_valid_image_input(mocker):
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
     request_data = EncodedImageRequest(image=img_str)
 
-    response = client.post("/api/show_image", json=request_data.dict())
+    response = client.post("/api/show_image", json=request_data.model_dump())
 
     assert response.status_code == 200
 
@@ -58,7 +58,7 @@ def test_correctly_processes_valid_base64_image(mocker):
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
     request_data = EncodedImageRequest(image=img_str)
 
-    response = client.post("/api/show_image", json=request_data.dict())
+    response = client.post("/api/show_image", json=request_data.model_dump())
 
     assert response.status_code == 200
     assert "<img src=\"data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA\"" in response.text
@@ -70,7 +70,7 @@ def test_returns_http_500_on_exception(mocker):
     request_data = EncodedImageRequest(image=img_str)
 
     with patch('app.api.routes.log') as mock_log:
-        response = client.post("/api/show_image", json=request_data.dict())
+        response = client.post("/api/show_image", json=request_data.model_dump())
         
         assert response.status_code == 500
 
@@ -87,7 +87,7 @@ def test_handles_empty_image_string(mocker, caplog):
 
     # Perform the post request
     with caplog.at_level(logging.ERROR):
-        response = client.post("/api/show_image", json=request_data.dict())
+        response = client.post("/api/show_image", json=request_data.model_dump())
 
     # Ensure that the error method was called with the expected message
     mock_error.assert_called_with("Error in showing the image - Empty base64 string")
@@ -101,7 +101,7 @@ def test_show_image_debug_false(mocker):
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
     request_data = EncodedImageRequest(image=img_str)
 
-    response = client.post("/api/show_image", json=request_data.dict())
+    response = client.post("/api/show_image", json=request_data.model_dump())
 
     assert response.status_code == 200  # Expecting 200 since the image is valid
 
@@ -117,7 +117,7 @@ def test_logs_error_message_on_exception(mocker):
 
     # Patch the log function in the correct module
     with patch('app.api.routes.log') as mock_log:
-        response = client.post("/api/show_image", json=request_data.dict())
+        response = client.post("/api/show_image", json=request_data.model_dump())
 
         # Check if the log was called with the expected error message
         mock_log.assert_called_once_with('Error in showing the image - Incorrect padding', logging.ERROR)
@@ -129,7 +129,7 @@ def test_image_tag_presence_in_html_response(mocker):
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
     request_data = EncodedImageRequest(image=img_str)
 
-    response = client.post("/api/show_image", json=request_data.dict())
+    response = client.post("/api/show_image", json=request_data.model_dump())
 
     assert response.status_code == 200
     assert "<img src=\"data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA\"" in response.text
@@ -140,7 +140,7 @@ def test_correct_html_format(mocker):
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
     request_data = EncodedImageRequest(image=img_str)
 
-    response = client.post("/api/show_image", json=request_data.dict())
+    response = client.post("/api/show_image", json=request_data.model_dump())
 
     assert response.status_code == 200
     assert "<img src=\"data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA\"" in response.text
@@ -151,7 +151,7 @@ def test_response_content_type_html(mocker):
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
     request_data = EncodedImageRequest(image=img_str)
 
-    response = client.post("/api/show_image", json=request_data.dict())
+    response = client.post("/api/show_image", json=request_data.model_dump())
 
     assert response.status_code == 200
     assert response.headers["content-type"] == "text/html; charset=utf-8"

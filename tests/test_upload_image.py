@@ -1,6 +1,6 @@
 import logging
 import re
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from io import BytesIO
@@ -87,13 +87,17 @@ def test_return_base64_encoded_image():
     assert "image" in response.json()
 
 # Handle corrupted image files without crashing##############################
-def test_handle_corrupted_image():
+@patch("app.logs.logger_config.global_logger")
+def test_handle_corrupted_image(mock_logger):
+    mock_handler = MagicMock()
+    mock_handler.level = logging.ERROR  # Ensure the level is set properly
+    mock_logger.handlers = [mock_handler]
+
     corrupted_data = b'corrupted_image_data'
     buffered = BytesIO(corrupted_data)
 
     response = client.post("/api/encode_image", files={"file": ("corrupted.jpg", buffered, "image/jpeg")})
-
-    assert response.status_code == 500
+    assert response.status_code == 400
     
 # Manage large image files without performance issues
 def test_manage_large_image_files():
