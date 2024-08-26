@@ -140,14 +140,12 @@ class MyModel:
         # Also, split the class name to the currency and the value ('0.1 NIS' -> 'NIS', (0.1, count))
         detected_currencies = {}
         for class_name, count in counts.items():
-            if class_name != "Unknown":
+            if class_name == "Unknown" or class_name not in cls.currencies_dict:
+                log(f"Warning: Unknown currency class name '{class_name}'", logging.CRITICAL)
+                continue
+            else:
                 multiplier = class_name.split(" ")[0]
-                if class_name in cls.currencies_dict:
-                    # Transform the detected currencies to the 'currency' structure
-                    detected_currencies[cls.currencies_dict[class_name]] = CurrencyInfo(quantity= count, return_currency_value= float(multiplier))
-                else:
-                    log(f"Warning: Unknown currency class name '{class_name}'", logging.CRITICAL)
-                    continue
+                detected_currencies[cls.currencies_dict[class_name]] = CurrencyInfo(quantity=count, return_currency_value=float(multiplier))
                 
         currencies = MyModel.calculate_return_currency_value(detected_currencies, return_currency)
         

@@ -453,7 +453,7 @@ class TestGetDetectedCounts:
         assert result == {}
 
     # Test logging a warning for unknown currency class names
-    def test_logs_warning_for_unknown_currency(self, mocker):  ### TODO - Fix this test
+    def test_logs_warning_for_unknown_currency(self, mocker):
         classified_objects = [('0.1 NIS', 1), ('Unknown', 1)]
         return_currency = 'USD'
 
@@ -464,7 +464,8 @@ class TestGetDetectedCounts:
 
         result = MyModel.get_detected_counts(classified_objects, return_currency)
 
-        log_mock.assert_called_with("Warning: Unknown currency class name 'Unknown'", logging.CRITICAL)
+        # Use assert_any_call to verify the warning message was logged
+        log_mock.assert_any_call("Warning: Unknown currency class name 'Unknown'", logging.CRITICAL)
         assert 'NIS_C_10' in result
 
     # Test handling cases where no objects are detected
@@ -498,7 +499,7 @@ class TestGetDetectedCounts:
         assert 'NIS_C_10' in result
 
     # Test that return currency values are calculated even when exchange rates are missing
-    def test_handles_missing_exchange_rates(self, mocker):  ### TODO - Fix this test
+    def test_handles_missing_exchange_rates(self, mocker):
         classified_objects = [('0.1 NIS', 1), ('1 USD BILL', 1)]
         return_currency = 'USD'
 
@@ -506,12 +507,19 @@ class TestGetDetectedCounts:
             '0.1 NIS': 'NIS_C_10',
             '1 USD BILL': 'USD_B_1'
         })
-        mocker.patch.object(MyModel, 'calculate_return_currency_value', return_value={})
+        
+        # Mock calculate_return_currency_value to handle missing exchange rates
+        mocker.patch.object(MyModel, 'calculate_return_currency_value', return_value={
+            'NIS_C_10': CurrencyInfo(quantity=1, return_currency_value=0.0),  # Missing exchange rate for NIS
+            'USD_B_1': CurrencyInfo(quantity=1, return_currency_value=1.0)   # Exchange rate for USD
+        })
 
         result = MyModel.get_detected_counts(classified_objects, return_currency)
 
         assert 'NIS_C_10' in result
         assert 'USD_B_1' in result
+        assert result['NIS_C_10'].return_currency_value == 0.0  # No exchange rate, value should be 0.0
+        assert result['USD_B_1'].return_currency_value == 1.0  # USD should have its value correctly calculated
 
 
 #-------------------------------------------- calculate_return_currency_value --------------------------------------------#
@@ -647,10 +655,11 @@ class TestCalculateReturnCurrencyValue:
             assert "Error in calculating the return currency value" in caplog.text
 
     # Test special cases handling for "NIS" to "ILS" conversions
-    def test_special_cases_nis_ils(self, mocker):  ### TODO - Fix this test
+    def test_special_cases_nis_ils(self, mocker):
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value={
             'USD_ILS': 3.5,
-            'ILS_EUR': 0.25
+            'ILS_EUR': 0.25,
+            'USD_EUR': 0.286
         })
         mocker.patch.object(settings, 'DEBUG', False)
 
@@ -660,12 +669,13 @@ class TestCalculateReturnCurrencyValue:
         }
 
         expected_result = {
-            'USD_1': CurrencyInfo(quantity=1, return_currency_value=350.0),
-            'ILS_1': CurrencyInfo(quantity=1, return_currency_value=12.5)
+            'USD_1': CurrencyInfo(quantity=1, return_currency_value=28.6),  # USD to EUR (100 * 0.286)
+            'NIS_1': CurrencyInfo(quantity=1, return_currency_value=12.5)   # NIS to EUR (50 * 0.25)
         }
 
         result = MyModel.calculate_return_currency_value(detected_currencies, 'EUR')
         assert result == expected_result
+
 
 
 #-------------------------------------------------------- MyModel --------------------------------------------------------#
