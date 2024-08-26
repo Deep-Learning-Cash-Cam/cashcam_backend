@@ -10,4 +10,5 @@ class CurrencyInfo(BaseModel):
 # along with the image url with the YOLO detection boxes
 class PredictResponse(BaseModel):
     currencies: Dict[str, CurrencyInfo]
-    image: str # Base64 encoded image
+    image: str # Base64 encoded image + id
+    image_id: str

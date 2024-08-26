@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -17,6 +18,6 @@ def get_db():
     try:
         yield db # Access db (dependency injection)
     except Exception as e:
-        log(f"Error in database connection - {str(e)}")
+        log(f"Exception caught while accessing the database - {str(e)}", logging.WARNING)
     finally:
         db.close()

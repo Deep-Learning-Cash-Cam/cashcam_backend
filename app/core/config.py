@@ -12,15 +12,15 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api"
     TEST_OUTPUT_PATH: str = "tests/test_output.txt"
     LOCAL_IP: str = "0.0.0.0"
-    DATABASE_URL: str = "sqlite:///./sql_app.db" #TODO: Update the database URL (currently dumps to root dir), postgres maybe?
+    DATABASE_URL: str = "sqlite:///./sql_cashcam.db" #TODO: Update the database URL (currently dumps to root dir), postgres maybe?
     PORT: int = 80
     DEBUG: bool = True
     
     # JWT
-    JWT_SECRET_KEY: str
+    JWT_ACCESS_SECRET_KEY: str
     JWT_REFRESH_SECRET_KEY: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30 # Used by JWT to check if the token is expired
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 30 # Used by JWT to check if the token is expired
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 6 # Used by JWT to check if the token is expired
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7 # Used by JWT to check if the token is expired
     JWT_ALGORITHM: str = "HS256"
     
     # Google OAuth2
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     
     # Exchange rate API
     EXCHANGE_RATE_API_KEY: str
-    UPDATE_RATES_INTERVAL_HOURS: int = 24 # Exchange rate service interval in hours
+    UPDATE_RATES_INTERVAL_HOURS: int = 24 * 7 # Exchange rate service interval in hours
     
     # Time
     @property

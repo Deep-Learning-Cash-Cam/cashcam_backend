@@ -128,16 +128,16 @@ def get_image(db: Session, image_id: int) -> db_models.Image | None:
     image = db.query(db_models.Image).filter(db_models.Image.id == image_id).first()
     if image:
         return image
-    
 
 # Add an image to the database and link it to a user by user id
-def save_image(db: Session, image: str, user_id: int) -> db_models.Image:
+def save_image(db: Session, image: str, user_id: int) -> str:
     log(f"Adding image to the database for user id:{user_id}", debug=True)
     db_image = db_models.Image(base64_string= image, user_id=user_id, flagged=False, upload_date=settings.TIME_NOW)
     db.add(db_image)
     db.commit()
     db.refresh(db_image)
     log(f"Image added successfully! id:{db_image.id}")
+    return db_image.id
 
 # Get all images from a user by user id
 def get_images_by_user_id(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> list[db_models.Image] | None:
@@ -156,3 +156,12 @@ def get_flagged_images_by_user_id(db: Session, user_id: int, skip: int = 0, limi
     flagged_images = db.query(db_models.Image).filter(db_models.Image.user_id == user_id, db_models.Image.flagged == True).offset(skip).limit(limit).all()
     if flagged_images:
         return flagged_images
+    
+def flag_image(db: Session, user_id: int, image_id: int) -> bool:
+    db_image = db.query(db_models.Image).filter(db_models.Image.id == image_id, db_models.Image.user_id == user_id).first()
+    if db_image:
+        db_image.flagged = True
+        db.commit()
+        log(f"Image flagged! id:{image_id} by user id:{user_id}")
+        return True
+    return False

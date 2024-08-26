@@ -1,6 +1,7 @@
 fastapi
 authlib
 uvicorn
+google-auth
 starlette
 itsdangerous
 python-dotenv

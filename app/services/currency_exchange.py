@@ -77,10 +77,14 @@ class ExchangeRateService:
     async def update_rates_daily(self):
         # Only fetch if rates are not available or last update was more UPDATE_RATES_INTERVAL_HOURS, try to load from file first
         while True:
+            self.load_rates_from_file()
             if not self.rates or self.last_update is None or settings.TIME_NOW - self.last_update > timedelta(hours=settings.UPDATE_RATES_INTERVAL_HOURS):
                 log("Starting daily exchange rate update")
+                log("Last update: " + str(self.last_update))
                 await self.fetch_rates()
-
+            else:
+                log("Exchange rates fetched from cache")
+                
             await asyncio.sleep(settings.UPDATE_RATES_INTERVAL_HOURS * 60 * 60)  # Sleep for UPDATE_RATES_INTERVAL_HOURS hours
 
     # ----------------- Get exchange rates from the cache file or fetch them if needed ----------------- #
@@ -92,11 +96,11 @@ class ExchangeRateService:
             else:
                 log("Loaded rates from file")
         else:
-            log("Using existing rates - No fetch needed")
+            log("Using existing rates - No fetch needed", debug=True)
         return self.rates
 
     # Should we update the rates based on last update time. Boolean function
     def should_update_rates(self):
         return not self.rates or self.last_update is None or settings.TIME_NOW - self.last_update > timedelta(days=1)
-
+    
 exchange_service = ExchangeRateService()

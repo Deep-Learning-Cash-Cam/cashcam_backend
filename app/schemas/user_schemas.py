@@ -37,8 +37,10 @@ class UserCreateRequest(UserBase):
 
 # How a user will be returned from the API
 class User(UserBase):
+    name: str
     id: int
     role: str
+    google_id: Optional[str] = None
     # Exclude the hashed_password field from the response!
 
     class Config: # Set orm_mode to True to allow the class to be used in the ORM (The database)
@@ -57,3 +59,6 @@ class UserUpdatePassword(BaseModel):
     @validator("password")
     def password_complexity(cls, password: str) -> str:
         return password_validator(password)
+    
+class UserLogin(UserBase):
+    password: str

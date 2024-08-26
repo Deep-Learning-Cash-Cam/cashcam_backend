@@ -9,3 +9,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     user_id: str
     email: str
+    
+class GoogleToken(BaseModel):
+    token_id: str

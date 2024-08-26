@@ -5,7 +5,7 @@ import secrets
 import uuid
 from app.core.config import settings
 
-def generate_user_id(length=16):
+def generate_id(length=16):
     return str(uuid.uuid4().int)[:length]
 
 # All the models here are used to interact with the database
@@ -14,7 +14,7 @@ def generate_user_id(length=16):
 class User(Base):
     __tablename__ = "users"
     
-    id = Column(String, primary_key=True, default= generate_user_id()) # The ID is the primary key, unique and indexed
+    id = Column(String, primary_key=True, default= generate_id()) # The ID is the primary key, unique and indexed
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String, nullable=True)
     role = Column(String, default="user")
@@ -28,7 +28,7 @@ class User(Base):
 class Image(Base):
     __tablename__ = "images"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True, default= generate_id())
     base64_string = Column(String)
     upload_date = Column(DateTime, default=settings.TIME_NOW)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # An image belongs to a user unless it was sent by an unregistered user (null)

@@ -190,6 +190,18 @@ class MyModel:
         
         except Exception as e:
             log(f"Error in calculating the return currency value - {str(e)}", logging.CRITICAL)
-            raise
+            raise ValueError("Error in calculating the return currency value")
+    
+    @classmethod
+    def predict_image(cls, image: Image, return_currency: str, confidence_threshold=0.5):
+        try:
+            cropped_images, boxes_and_classes = cls.detect_and_collect_objects(cls.object_detection_model, image, confidence_threshold= confidence_threshold)
+            classified_objects = cls.classify_objects(cls.classification_model, cropped_images)
+            annotated_image = cls.annotate_image(image, boxes_and_classes, classified_objects)
+            currencies = cls.get_detected_counts(classified_objects, return_currency)
+        except Exception as e:
+            log(f"Error in predicting the image - {str(e)}", logging.CRITICAL)
+            raise ValueError("Error in predicting the image")
+        return annotated_image, currencies
 
 model = MyModel()

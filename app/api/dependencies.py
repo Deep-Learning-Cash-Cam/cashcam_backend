@@ -1,15 +1,18 @@
 import logging
 from typing import Annotated
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from app.core import security
+from app.db import crud
 from app.db.db_models import User
 from app.core.config import settings
 from app.db.database import get_db
 from app.core.security import verify_token
 from app.logs.logger_config import log
+from app.schemas import user_schemas
 from app.schemas.token_schemas import TokenData
 from authlib.integrations.starlette_client import OAuth
 
@@ -29,11 +32,22 @@ oauth.register(
     access_token_params=None,
     refresh_token_url=None,
     refresh_token_params=None,
-    redirect_uri="http://localhost:8000/auth/google/callback",
+    redirect_uri="http://localhost:8000/auth/google/success",
     client_kwargs={"scope": "openid profile email"},
 )
 
-# Get a user based on a token
+# Wrapper function to get a user based on a token or none if no user is found for any reason
+async def get_current_user_or_None(token: Annotated[str, Depends(oauth2_scheme)], db: db_dependancy) -> User | None:
+    try:
+        if not token:
+            return None
+        user = await get_current_user_by_token(token, db)
+    except Exception as e:
+        log(f"Error during user_dependency - {str(e)}", logging.INFO, debug=True)
+        return None
+    return user
+
+# Get a user based on a token or raise an exception if the token is invalid
 async def get_current_user_by_token(token: Annotated[str, Depends(oauth2_scheme)], db: db_dependancy):
     # If the token is invalid, raise this exception
     credentials_exception = HTTPException(
@@ -72,11 +86,14 @@ async def get_current_user_by_token(token: Annotated[str, Depends(oauth2_scheme)
     return user
 
 
-def verify_jwt_token(token: Annotated[str, Depends(oauth2_scheme)]):
+def verify_jwt_token(token: Annotated[str, Depends(oauth2_scheme)], is_refresh: bool = False):
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        if is_refresh:
+            payload = jwt.decode(token, settings.JWT_REFRESH_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        else:
+            payload = jwt.decode(token, settings.JWT_ACCESS_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return payload
     except JWTError as e:
-        log(f"Error while verifying token {token}", logging.INFO)
-        log(str(e), logging.ERROR)
+        log(f"Failed to verify token - {str(e)}", logging.INFO, debug=True)
         return None
+    

@@ -5,6 +5,7 @@ from datetime import timedelta
 from jose import jwt, JWTError
 from app.core.config import settings
 from app.logs.logger_config import log
+from app.schemas import token_schemas
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__min_rounds=12)
 
@@ -23,7 +24,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": new_expire_time, "token_type": "access"})
     
     # Encode the data and return the token
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.JWT_ACCESS_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     log(f"Access token created! Expiration time: {new_expire_time}", logging.INFO)
     return encoded_jwt
 
@@ -52,7 +53,7 @@ def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
 def verify_token(token: str, token_type: str) -> Optional[dict]:
     try: #Check if the token is access or refresh
         if token_type == "access":
-            payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+            payload = jwt.decode(token, settings.JWT_ACCESS_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         elif token_type == "refresh":
             payload = jwt.decode(token, settings.JWT_REFRESH_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         else: # Token type is invalid, raise an exception
@@ -79,13 +80,21 @@ def verify_token(token: str, token_type: str) -> Optional[dict]:
     except (JWTError, ValueError) as e: # If an error occurs, log it and return None
         log(f"Error while verifying token: {str(e)}", logging.ERROR)
         return None
-    
+
+
 # Create both access and refresh tokens
-def create_tokens(data: dict) -> Tuple[str, str]:
+def create_tokens(token_data: token_schemas.TokenData) -> dict:
+    # Create format
+    data = {"sub": token_data.user_id, "email": token_data.email}
+    
+    # Encode the tokens
     access_token = create_access_token(data)
     refresh_token = create_refresh_token(data)
     log("Access and refresh tokens created successfully", logging.INFO, debug=True)
-    return access_token, refresh_token
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"}
 
 # Verify a password against a hashed password
 def verify_password(plain_password, hashed_password):
