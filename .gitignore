@@ -8,6 +8,8 @@ app/logs/cashcam_log.log
 share/man/man1/isympy.1
 share/man/man1/ttx.1
 
+test.txt
+
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
 .Python

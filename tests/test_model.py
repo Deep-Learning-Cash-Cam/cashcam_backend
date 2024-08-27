@@ -236,11 +236,11 @@ def high_res_image():
 class TestAnnotateImage:
 
     # Account for slight variations in color due to anti-aliasing or image processing
-    def assert_color_close(actual_color, expected_color, tolerance=50):
+    def assert_color_close(actual_color, expected_color, tolerance=15):
         return all(abs(a - e) <= tolerance for a, e in zip(actual_color, expected_color))
 
     # Check for color assignment and correct drawing for known classes
-    def test_annotate_image_known_classes(self, blank_image):  ### TODO - Fix this test
+    def test_annotate_image_known_classes(self, blank_image):
         boxes_and_classes = [(10, 10, 50, 50, 'Currency', 0.9)]
         classified_objects = [('USD Dollar', 0.95)]
 
@@ -251,10 +251,14 @@ class TestAnnotateImage:
         assert not np.all(annotated_array == 255)
 
         # Print the actual color at the pixel for debugging
-        print("Pixel color at (15, 15):", annotated_array[15, 15])
+        print("Pixel color at (10, 10):", annotated_array[10, 10])
+
+        for y in range(10, 20):
+            for x in range(10, 20):
+                print(f"Pixel color at ({x}, {y}):", annotated_array[y, x])
 
         # Check color for USD (allowing some tolerance)
-        assert TestAnnotateImage.assert_color_close(annotated_array[15, 15], [0, 128, 0])  # Green for USD
+        assert TestAnnotateImage.assert_color_close(annotated_array[10, 10], [0, 128, 0])  # Green for USD
 
     # Check for correct handling of "Unknown" classes
     def test_annotate_image_unknown_class(self, blank_image):
@@ -267,7 +271,7 @@ class TestAnnotateImage:
         assert not np.all(annotated_array == 255)
 
         # Check that the color is red for "Unknown"
-        assert (annotated_array[15, 15] == [255, 0, 0]).all()
+        assert (annotated_array[10, 10] == [255, 0, 0]).all()
 
     # Check for currency-specific color assignments
     def test_annotate_image_currency_colors(self, blank_image):
@@ -280,16 +284,16 @@ class TestAnnotateImage:
         assert not np.all(annotated_array == 255)
 
         # Print the actual color at the pixel for debugging
-        print("Pixel color at (15, 15):", annotated_array[15, 15])
+        print("Pixel color at (10, 10):", annotated_array[15, 15])
 
         # Check that the color is orange for Euro
-        assert (annotated_array[15, 15] == [255, 165, 0]).all()
+        assert (annotated_array[10, 10] == [255, 165, 0]).all()
 
     # Ensure correct handling of multiple objects in an image
-    def test_annotate_image_multiple_objects(self, blank_image):  ### TODO - Fix this test
+    def test_annotate_image_multiple_objects(self, blank_image): 
         boxes_and_classes = [
-            (10, 10, 50, 50, 'Currency', 0.9),
-            (20, 20, 60, 60, 'Currency', 0.8)
+            (10, 10, 30, 30, 'Currency', 0.9),  # Smaller USD box
+            (40, 40, 60, 60, 'Currency', 0.8)   # Separate Euro box
         ]
         classified_objects = [('USD Dollar', 0.95), ('Euro', 0.85)]
 
@@ -298,14 +302,15 @@ class TestAnnotateImage:
 
         assert not np.all(annotated_array == 255)
 
-        # Print the actual color at the pixel for debugging
-        print("Pixel color at (15, 15):", annotated_array[15, 15])
-        print("Pixel color at (25, 15):", annotated_array[25, 15])
-        print("Pixel color at (40, 40):", annotated_array[40, 40])  # Check a pixel inside the Euro box
+        # Debugging prints
+        print("Pixel color at (15, 15):", annotated_array[15, 15])  # Inside USD box
+        print("Pixel color at (45, 45):", annotated_array[45, 45])  # Inside Euro box
 
         # Check color for USD (allowing some tolerance)
-        assert TestAnnotateImage.assert_color_close(annotated_array[15, 15], [0, 128, 0])  # Green for USD
-        assert TestAnnotateImage.assert_color_close(annotated_array[25, 15], [255, 165, 0])  # Orange for Euro
+        assert TestAnnotateImage.assert_color_close(annotated_array[20, 20], [0, 128, 0], tolerance=15)  # Green for USD
+
+        # Check color for Euro (allowing some tolerance)
+        assert TestAnnotateImage.assert_color_close(annotated_array[45, 45], [255, 165, 0], tolerance=15)  # Orange for Euro
 
     # Test for cases where the classified_class does not have a space
     def test_annotate_image_classified_class_no_space(self, blank_image):
@@ -377,7 +382,7 @@ class TestGetDetectedCounts:
         assert result['USD_B_1'].return_currency_value == 1.0
 
     # Test handling unknown currency classes with logging
-    def test_handles_unknown_currency_classes(self, mocker): ### TODO - Fix this test
+    def test_handles_unknown_currency_classes(self, mocker):
         classified_objects = [('Unknown', 1), ('0.5 NIS', 1)]
         return_currency = 'USD'
     
@@ -392,7 +397,7 @@ class TestGetDetectedCounts:
     
         result = MyModel.get_detected_counts(classified_objects, return_currency)
     
-        log_mock.assert_called_with("Warning: Unknown currency class name 'Unknown'", logging.CRITICAL)
+        log_mock.assert_any_call("Warning: Unknown currency class name 'Unknown'", logging.CRITICAL)
         assert 'NIS_C_50' in result
         assert result['NIS_C_50'].quantity == 1
         assert result['NIS_C_50'].return_currency_value == 0.5

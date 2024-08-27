@@ -91,6 +91,9 @@ class MyModel:
 
     @classmethod
     def annotate_image(cls, image, boxes_and_classes, classified_objects):
+        if len(boxes_and_classes) != len(classified_objects):
+            raise ValueError("The number of bounding boxes and classified objects must match.")
+
         draw = ImageDraw.Draw(image)
         default_color = "red"
 
@@ -105,9 +108,6 @@ class MyModel:
                     color = "orange"
                 elif "USD" in classified_class:
                     color = "green"
-
-            # Debugging print statement
-            print(f"Classified: {classified_class}, Color: {color}, Box: ({x1}, {y1}, {x2}, {y2})")
 
             draw.rectangle([x1, y1, x2, y2], outline=color, width=2)
 

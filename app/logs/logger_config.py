@@ -5,6 +5,7 @@ from logging.handlers import RotatingFileHandler
 def setup_global_logger(level=logging.INFO, max_bytes=10*1024*1024, backup_count=4):
     # Create logs directory if it doesn't exist
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
+    print(f"Log directory: {log_dir}")  # Debugging output
     os.makedirs(log_dir, exist_ok=True)
     
     # Create formatter
