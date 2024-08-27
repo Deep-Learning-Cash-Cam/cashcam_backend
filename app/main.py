@@ -7,33 +7,19 @@ load_dotenv()
 sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 
 # Now we can import the FastAPI app and run it
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from app.core.config import settings
 from app.api.endpoints.routes import router as api_router
 from app.api.endpoints.auth import auth_router
 from app.logs.logger_config import log
 import asyncio
-from app.db.database import engine, get_db
-from app.db import crud, db_models
+from app.db.database import engine
+from app.db import db_models
 from app.services.currency_exchange import exchange_service
 from contextlib import asynccontextmanager
-from typing import Annotated, List
-from fastapi.security import OAuth2PasswordRequestForm
-from requests import Session
-
-from app.api.dependencies import get_current_user_by_token
-from app.core import security
-from app.schemas import token_schemas, user_schemas
-
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.openapi.utils import get_openapi
-
-from starlette.config import Config
+from typing import List
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
-
-from authlib.integrations.starlette_client import OAuth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -69,9 +55,6 @@ app = FastAPI(lifespan=lifespan, title=settings.PROJECT_NAME, version=settings.P
 app.add_middleware(SessionMiddleware, secret_key=settings.JWT_ACCESS_SECRET_KEY)
 app.include_router(api_router, prefix=settings.API_PREFIX)
 app.include_router(auth_router, prefix="/auth")
-
-db_dependancy = Annotated[Session, Depends(get_db)]
-user_dependancy = Annotated[user_schemas.User, Depends(get_current_user_by_token)]
 
 @app.get("/")
 async def root(request: Request):

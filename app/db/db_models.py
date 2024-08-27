@@ -1,7 +1,6 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey, BigInteger
+from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
-import secrets
 import uuid
 from app.core.config import settings
 
@@ -30,7 +29,7 @@ class Image(Base):
 
     id = Column(String, primary_key=True, index=True, default= generate_id())
     base64_string = Column(String)
-    upload_date = Column(DateTime, default=settings.TIME_NOW)
+    upload_date = Column(DateTime(timezone=True), default=settings.TIME_NOW)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # An image belongs to a user unless it was sent by an unregistered user (null)
     flagged = Column(Boolean, default=False) # When true, the image is flagged for review due to a possible error with prediction results
 

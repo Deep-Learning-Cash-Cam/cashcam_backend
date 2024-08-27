@@ -78,7 +78,7 @@ class ExchangeRateService:
         # Only fetch if rates are not available or last update was more UPDATE_RATES_INTERVAL_HOURS, try to load from file first
         while True:
             self.load_rates_from_file()
-            if not self.rates or self.last_update is None or settings.TIME_NOW - self.last_update > timedelta(hours=settings.UPDATE_RATES_INTERVAL_HOURS):
+            if not self.rates or self.last_update is None or self.should_update_rates():
                 log("Starting daily exchange rate update")
                 log("Last update: " + str(self.last_update))
                 await self.fetch_rates()

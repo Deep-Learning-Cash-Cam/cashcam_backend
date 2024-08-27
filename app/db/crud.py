@@ -1,18 +1,21 @@
 import logging
-import secrets
+from typing import Optional
 from sqlalchemy.orm import Session
-from ultralytics import settings
 from app.db import db_models
-from app.schemas import image_schemas, user_schemas
+from app.schemas import user_schemas
 from app.core.security import get_password_hash, verify_password
 from app.logs import log
 
 # ----------------------------------------------------------- User api ----------------------------------------------------------- #
 
-def get_user(db: Session, user_id: int) -> db_models.User | None:
+def get_user(db: Session, user_id: int, email = Optional[str | None]) -> db_models.User | None:
     user = db.query(db_models.User).filter(db_models.User.id == user_id).first()
     if user:
+        if email and user.email != email:
+            log(f"User with id:{user_id} does not match the email provided", logging.CRITICAL)
+            return None
         return user
+    return None
 
 def get_user_by_email(db: Session, email: str) -> db_models.User | None:
     user = db.query(db_models.User).filter(db_models.User.email == email).first()
@@ -132,7 +135,7 @@ def get_image(db: Session, image_id: int) -> db_models.Image | None:
 # Add an image to the database and link it to a user by user id
 def save_image(db: Session, image: str, user_id: int) -> str:
     log(f"Adding image to the database for user id:{user_id}", debug=True)
-    db_image = db_models.Image(base64_string= image, user_id=user_id, flagged=False, upload_date=settings.TIME_NOW)
+    db_image = db_models.Image(base64_string= image, user_id=user_id, flagged=False)
     db.add(db_image)
     db.commit()
     db.refresh(db_image)

@@ -1,8 +1,8 @@
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
-from app.api.dependencies import get_current_user_by_token, get_current_user_or_None
+from app.api.dependencies import get_current_user
 from app.db.database import get_db
-from app.schemas import PredictRequest, PredictResponse, EncodedImageResponse, EncodedImageString, user_schemas
+from app.schemas import PredictRequest, PredictResponse, EncodedImageString, user_schemas
 from app.ml.model import MyModel
 from fastapi.responses import HTMLResponse, JSONResponse
 from app.core.config import settings
@@ -17,8 +17,8 @@ import io
 model = MyModel()
 router = APIRouter()
 
-db_dependancy = Annotated[Session, Depends(get_db)]
-user_dependancy = Annotated[user_schemas.User | None, Depends(get_current_user_or_None)]
+db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[user_schemas.User | None, Depends(get_current_user)]
 
 # ----------------------------------------------------------- Model routes ----------------------------------------------------------- #
 from PIL import Image
@@ -26,7 +26,7 @@ from PIL import Image
 # Predict an image and return the anotataed image with the detected counts
 # If a user is logged in, save image to user's images, if not, save it to the general images
 @router.post("/predict", response_model=PredictResponse)
-async def predict(request: PredictRequest, user: user_dependancy, db: db_dependancy):
+async def predict(request: PredictRequest, user: user_dependency, db: db_dependency):
     try:
         # Check that return currency is valid
         if request.return_currency not in exchange_service.CURRENCIES:
@@ -118,7 +118,7 @@ async def show_image(request: EncodedImageString):
 from app.services.currency_exchange import exchange_service
 
 @router.get("/exchange_rates")
-def get_exchange_rates(user: user_dependancy, db: db_dependancy):
+def get_exchange_rates(user: user_dependency, db: db_dependency):
     try:
         # Only allow admin users to access the exchange rates
         if user and user.role == "admin":
@@ -135,9 +135,9 @@ def get_exchange_rates(user: user_dependancy, db: db_dependancy):
     
 # ----------------------------------------------------------- User routes ----------------------------------------------------------- #
 
-#TODO: ADD FLAG IMAGE ROUTE
+#TODO: TEST THIS ROUTE
 @router.post("/flag_image/{image_id}")
-async def flag_image(user: user_dependancy, db: db_dependancy, image_id: int):
+async def flag_image(user: user_dependency, db: db_dependency, image_id: int):
     if not user:
         raise HTTPException(status_code=401, detail="User not found - Unauthorized")
     try:
@@ -147,3 +147,15 @@ async def flag_image(user: user_dependancy, db: db_dependancy, image_id: int):
         return {"message": "Image not found or already flagged"}
     except Exception as e:
         return {"message": "Error in flagging the image"}
+    
+    
+@router.get("/get_images")
+async def get_images(user: user_dependency, db: db_dependency):
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found - Unauthorized")
+    try:
+        # Get the user's images
+        images = crud.get_images_by_user_id(db, user.id)
+        return {"images": images}
+    except Exception as e:
+        return {"message": "Error in getting images"}

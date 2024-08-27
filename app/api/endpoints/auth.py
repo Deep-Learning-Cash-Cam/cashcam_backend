@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from app.api.dependencies import get_current_user_or_None, verify_jwt_token
 from app.core import security
 from app.schemas import user_schemas as user_schemas
 from app.schemas import token_schemas as token_schemas
@@ -9,14 +8,9 @@ import requests
 from app.core.config import settings
 from app.db.database import get_db
 from sqlalchemy.orm import Session
-from jose import jwt, JWTError
-from datetime import timedelta
-
-from fastapi.responses import RedirectResponse
-from authlib.integrations.starlette_client import OAuth
-
+from app.api.dependencies import get_current_user
 import logging
-from typing import Annotated, Optional, Tuple
+from typing import Annotated
 from passlib.context import CryptContext
 from app.logs.logger_config import log
 
@@ -29,22 +23,26 @@ password_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__m
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 db_dependency = Annotated[Session, Depends(get_db)]
-user_dependency = Annotated[user_schemas.User | None, Depends(get_current_user_or_None)]
+user_dependency = Annotated[user_schemas.User | None, Depends(get_current_user)]
 
 # ----------------------------------------------------------- Routes ----------------------------------------------------------- #
 
 # Register a new user locally using name, email and password
 @auth_router.post("/register", response_model=token_schemas.Token)
-def register(user: user_schemas.UserCreateRequest, db: db_dependency):
+def register(form_data: user_schemas.UserCreateRequest,user: user_dependency, db: db_dependency):
+    # Check if the user is already authenticated
+    if user:
+        return security.create_tokens(token_schemas.TokenData(user_id=user.id, email=user.email))
+    
     # Check if a user with the same email already exists
-    db_user = crud.get_user_by_email(db, email=user.email)
+    db_user = crud.get_user_by_email(db, email=form_data.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
     # If the user does not exist, create a new user
-    new_user = crud.create_user(db=db, user=user)
+    new_user = crud.create_user(db=db, user=form_data)
     if not new_user:
-        log(f"User creation failed: {user}", logging.ERROR)
+        log(f"User creation failed: {form_data}", logging.ERROR)
         raise HTTPException(status_code=400)
     
     return security.create_tokens(token_schemas.TokenData(user_id=new_user.id, email=new_user.email))
@@ -52,7 +50,7 @@ def register(user: user_schemas.UserCreateRequest, db: db_dependency):
 
 # Local login route (email and password)
 @auth_router.post("/login", response_model= token_schemas.Token)
-async def login(form_data: user_schemas.UserLogin, db: db_dependency):
+async def login(form_data: user_schemas.UserLogin, user: user_dependency, db: db_dependency):
     # Set the credentials exception
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -60,9 +58,7 @@ async def login(form_data: user_schemas.UserLogin, db: db_dependency):
         headers={"WWW-Authenticate": "Bearer"},)
     
     try:
-        user = await get_current_user_or_None(form_data, db)
         if user: # User is already authenticated, return the tokens
-            # data is in format of TokenData schema
             return security.create_tokens(token_schemas.TokenData(user_id=user.id, email=user.email))
     except Exception as e:
         # User is not authenticated, continue
@@ -74,7 +70,6 @@ async def login(form_data: user_schemas.UserLogin, db: db_dependency):
         raise credentials_exception
     
     return security.create_tokens(token_schemas.TokenData(user_id=found_user.id, email=found_user.email))
-
 
 
 # TODO: TEST THIS ROUTE
@@ -93,7 +88,7 @@ def logout(request: Request, response: Response):
 
 @auth_router.get("/users/me", response_model=user_schemas.User, status_code=status.HTTP_200_OK)
 async def get_current_user(user: user_dependency):
-    if not user:
+    if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
@@ -117,7 +112,7 @@ async def refresh_token(
 ):
     invalid_token_exception = HTTPException(status_code=401, detail="Invalid token")
     
-    payload = verify_jwt_token(refresh_token, is_refresh=True)
+    payload = security.verify_jwt_token(refresh_token, is_refresh=True)
     if payload: # Token is valid, find user
         user_id = payload.get("sub")
         user_email = payload.get("email")
@@ -129,7 +124,6 @@ async def refresh_token(
         raise invalid_token_exception
     
 # ----------------------------------------------------------- Google auth ----------------------------------------------------------- #
-# TODO: TEST ALL GOOGLE AUTHENTICATION ROUTES
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -176,146 +170,3 @@ async def google_signin(token_data: token_schemas.GoogleToken, db: db_dependency
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# GOOGLE_CALLBACK_URI: str = "/google/callback"
-# GOOGLE_CLIENT_ID: str = settings.GOOGLE_CLIENT_ID
-# GOOGLE_CLIENT_SECRET: str = settings.GOOGLE_CLIENT_SECRET
-# CONF_URL: str = "https://accounts.google.com/.well-known/openid-configuration"
-
-# oauth = OAuth()
-# oauth.register(
-#     name="google",
-#     client_id=GOOGLE_CLIENT_ID,
-#     client_secret=GOOGLE_CLIENT_SECRET,
-#     server_metadata_url=CONF_URL,
-#     client_kwargs={"scope": "openid profile email"}
-#
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# @auth_router.get("/google/login")
-# async def google_login(request: Request):
-#     redirect_uri = request.url_for('google_auth')
-#     return await oauth.google.authorize_redirect(request, redirect_uri)
-
-
-# @auth_router.get("/google/authenticate")
-# async def google_auth(request: Request):
-#     try:
-#         token = await oauth.google.authorize_access_token(request)
-#     except Exception as e:
-#         log(f"Failed to authenticate: {str(e)}", logging.ERROR, debug=True)
-#         raise HTTPException(status_code=400, detail="Failed to authenticate")
-#     user = await oauth.google.parse_id_token(request, token)
-    
-#     request.session["user"] = dict(user)
-    
-#     return RedirectResponse(url="/auth/google/success")
-    
-    
-# @auth_router.get("/google/success")
-# async def google_success(request: Request):
-#     user = request.session.get("user")
-#     if user:
-#         return {"message": f"Welcome, {user['name']}, login successful."}
-#     return {"message": "User not found"}
-
-    # return {
-    #     "url": f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={GOOGLE_CLIENT_ID}&redirect_uri={GOOGLE_CALLBACK_URI}&scope=openid%20profile%20email&access_type=offline"
-    # }
-    
-    # token_url = "https://accounts.google.com/o/oauth2/token"
-    # data = {
-    #     "code": code,
-    #     "client_id": GOOGLE_CLIENT_ID,
-    #     "client_secret": GOOGLE_CLIENT_SECRET,
-    #     "redirect_uri": GOOGLE_CALLBACK_URI,
-    #     "grant_type": "authorization_code"
-    # }
-    # response = requests.post(token_url, data= data)
-    # access_token = response.json().get("access_token")
-    # user_info = requests.get("https://www.googleapis.com/oauth2/v1/userinfo", headers={"Authorization": f"Bearer {access_token}"})
-    # return user_info.json()
-
-# @auth_router.get("/token")
-# async def get_token(token: str = Depends(oauth2_scheme)):
-#     return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-
-
-# # Handle the login access token route (for OAuth2) for the returned token
-# @auth_router.post("/google/login", response_model=token_schemas.Token)
-# def login_access_token(
-#     db: Session = Depends(get_db),
-#     form_data: OAuth2PasswordRequestForm = Depends()
-# ):
-#     user = crud.authenticate_user(db, email=form_data.username, password=form_data.password)
-#     if not user:
-#         raise HTTPException(status_code=400, detail="Incorrect email or password")
-#     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-#     access_token, refresh_token = security.create_tokens(
-#         data={"sub": user.id, "email": user.email},
-#         expires_delta=access_token_expires
-#     )
-#     return {
-#         "access_token": access_token,
-#         "refresh_token": refresh_token,
-#         "token_type": "bearer"}
-    
-    
-    
-
-    
-#TODO: FINISH THIS ROUTE
-# @auth_router.get(GOOGLE_CALLBACK_URL)
-# def google_callback(code: str, db: Session = Depends(get_db)):
-#     # Get the user's information from Google using the code
-#     user_info = security.get_google_user_info(code)
-    
-#     # Check if the user is already registered
-#     db_user = crud.get_user_by_email(db, email=user_info.email)
-#     if db_user:
-#         # If the user is already registered, return the user's information
-#         return db_user
-    
-#     # If the user is not registered, create a new user
-#     new_user = crud.create_user(db=db, user=user_info)
-#     return new_user
-
-
-
-
-# TODO: ADD refresh token route
-
-
-

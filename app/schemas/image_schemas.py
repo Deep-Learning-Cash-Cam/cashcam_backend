@@ -10,4 +10,3 @@ class EncodedImageResponse(BaseModel):
     
 class EncodedImageString(BaseModel):
     image: str  # Base64 encoded image
-    
