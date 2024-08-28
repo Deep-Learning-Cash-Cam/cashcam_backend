@@ -95,7 +95,7 @@ async def get_user(user: user_dependency):
     return user
 
 
-# Used to create tokens with the user's id and email
+# Used to create tokens with password and email
 @auth_router.post("/token", response_model=token_schemas.Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
     # ----------- OAuth2PasswordRequestForm requires a username field, the email is used as the username ----------- #
@@ -108,23 +108,28 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
 
 #TODO: TEST ROUTE
-@auth_router.post("/refresh", response_model=token_schemas.Token)
-async def refresh_token(
-    refresh_token: str = Depends(oauth2_bearer),
-):
+@auth_router.post("/refresh_token", response_model=token_schemas.Token)
+async def refresh_token(refresh_token: str, user: user_dependency):
     invalid_token_exception = HTTPException(status_code=401, detail="Invalid token")
+
+    if user: # User is already authenticated, return the tokens
+        log(f"User already authenticated", logging.INFO, debug=True)
+        return security.create_tokens(token_schemas.TokenData(user_id=user.id, email=user.email))
     
-    payload = security.verify_jwt_token(refresh_token, is_refresh=True)
-    if payload: # Token is valid, find user
+    # Else, try to authenticate the refresh token
+    payload = security.verify_jwt_token(token= refresh_token, is_refresh=True)
+    if payload: # Token is valid, return new tokens
         user_id = payload.get("sub")
         user_email = payload.get("email")
         if user_id is None or user_email is None:
+            log(f"User ID or email not found in token", logging.ERROR, debug=True)
             raise invalid_token_exception
         
-        return security.create_tokens(token_schemas.TokenData(user_id=user_id, email=user_email))
+        log(f"Tokens refreshed for user: {user_id}", logging.INFO, debug=True)
+        return security.create_tokens(token_schemas.TokenData(user_id= user_id, email= user_email))
     else: # Token is invalid
         raise invalid_token_exception
-    
+
 # ----------------------------------------------------------- Google auth ----------------------------------------------------------- #
 
 from google.oauth2 import id_token

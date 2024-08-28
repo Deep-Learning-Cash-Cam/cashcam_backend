@@ -149,13 +149,19 @@ async def flag_image(user: user_dependency, db: db_dependency, image_id: int):
         return {"message": "Error in flagging the image"}
     
     
+# TODO: TEST THIS ROUTE
 @router.get("/get_images")
-async def get_images(user: user_dependency, db: db_dependency):
+async def get_image_history(user: user_dependency, db: db_dependency):
+    #Check if the user exists
     if not user:
-        raise HTTPException(status_code=401, detail="User not found - Unauthorized")
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    # Get the user's image history
     try:
-        # Get the user's images
         images = crud.get_images_by_user_id(db, user.id)
+        log(f"Got image history for user: {user.id}, logging.INFO", debug=True)
         return {"images": images}
     except Exception as e:
-        return {"message": "Error in getting images"}
+        log(f"Error in getting image history for user: {user.id} - {str(e)}", logging.ERROR)
+        return {"message": "Error in getting image history"}
+    

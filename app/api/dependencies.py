@@ -25,16 +25,19 @@ async def get_current_user(request: Request, db: db_dependancy):
             try:
                 payload = verify_jwt_token(token.split()[1])
                 if payload is None: # token is invalid, return None
+                    log(f"Token is invalid", logging.INFO, debug=True)
                     return None
                 
                 user_id = payload.get("sub")
                 user_email = payload.get("email")
                 if not user_id or not user_email:
+                    log(f"Token is missing fields", logging.INFO, debug=True)
                     return None # Return None if fields are missing
                 
                 # Get the user from the database
                 user = get_user(db, user_id, email=user_email)
                 if not user:
+                    log(f"User not found in the database", logging.INFO, debug=True)
                     return None # User not in the database
                 
                 # User found, add to request and return it
