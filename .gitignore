@@ -1,5 +1,6 @@
 **/__pycache__/
 /.env
+.env
 app/logs/cashcam_log\d+\.log
 
 app/logs/cashcam_log*.log
@@ -19,3 +20,10 @@ share/man/man1/ttx.1
 pyvenv.cfg
 .venv
 pip-selfcheck.json
+venv/
+
+# Database files
+*.db
+
+# Model files
+*.pt

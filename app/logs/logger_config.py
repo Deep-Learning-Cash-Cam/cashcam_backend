@@ -1,8 +1,9 @@
+from logging.handlers import RotatingFileHandler
+from app.core import settings
 import logging
 import os
-from logging.handlers import RotatingFileHandler
 
-def setup_global_logger(level=logging.INFO):
+def setup_global_logger(level=logging.INFO, maxBytes= 10*1024*1024, backupCount=4):
     # Create logs directory if it doesn't exist (log_dir is set to the parent directory of the current file)
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
     os.makedirs(log_dir, exist_ok=True)
@@ -13,8 +14,8 @@ def setup_global_logger(level=logging.INFO):
     # Create handlers
     file_handler = RotatingFileHandler(
         os.path.join(log_dir, 'cashcam_log.log'),
-        maxBytes=10*1024*1024,  # 10MB max file size
-        backupCount=4
+        maxBytes= maxBytes,  # 10MB max file size
+        backupCount= backupCount
     )
     file_handler.setFormatter(formatter)
 
@@ -38,10 +39,15 @@ def log_message(logger, level, message):
         logger.critical(message)
     else:
         logger.info(f"Unknown level '{level}': {message}")
+    print(message)
         
 # Set up the global logger object
 global_logger = setup_global_logger()
 
 # Function to import for logging
-def log(message, level=logging.INFO):
+def log(message, level=logging.INFO, debug=False):
+    # If debug is requested but the app is not in debug mode, don't log
+    if debug and not settings.DEBUG:
+        return
+
     log_message(global_logger, level, message)
