@@ -28,4 +28,3 @@ class Image(Base):
     flagged = Column(Boolean, default=False) # When true, the image is flagged for review due to a possible error with prediction results
 
     user = relationship("User", back_populates="images")
-    

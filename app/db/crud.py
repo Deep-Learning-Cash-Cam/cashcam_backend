@@ -166,7 +166,7 @@ def get_flagged_images_by_user_id(db: Session, user_id: int, skip: int = 0, limi
     if flagged_images:
         return flagged_images
     
-def flag_image(db: Session, user_id: int, image_id: int) -> bool:
+def flag_image(db: Session, user_id: int, image_id: str) -> bool:
     db_image = db.query(db_models.Image).filter(db_models.Image.id == image_id, db_models.Image.user_id == user_id).first()
     if db_image:
         db_image.flagged = True

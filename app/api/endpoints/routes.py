@@ -137,7 +137,7 @@ def get_rates(user: user_dependency, db: db_dependency):
 
 #TODO: TEST THIS ROUTE
 @router.post("/flag_image/{image_id}")
-async def flag_image(user: user_dependency, db: db_dependency, image_id: int):
+async def flag_image(user: user_dependency, db: db_dependency, image_id: str):
     if not user:
         raise HTTPException(status_code=401, detail="User not found - Unauthorized")
     try:
