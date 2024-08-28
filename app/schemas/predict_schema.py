@@ -6,12 +6,9 @@ class CurrencyInfo(BaseModel):
     quantity: int  # How many objects of this currency were detected in the image
     return_currency_value: float # The value of one object of this currency and it's value in the return currency
     
-# PredictResponse is the response sent to a predict request containing the detected currencies and their values 
+# PredictResponse is the response sent to a predict request containing the detected currencies and their values
 # along with the image url with the YOLO detection boxes
 class PredictResponse(BaseModel):
     currencies: Dict[str, CurrencyInfo]
-    image: str # Base64 encoded image
-
-    
-class EncodedImageResponse(BaseModel):
-    image: str  # Base64 encoded image
+    image: str # Base64 encoded image + id
+    image_id: str | None # The image's id or None if the image was not saved

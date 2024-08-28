@@ -2,7 +2,7 @@ from app.core.config import settings
 from ultralytics import YOLO
 import numpy as np
 from PIL import Image, ImageDraw
-from app.schemas.response import CurrencyInfo
+from app.schemas.predict_schema import CurrencyInfo
 from app.services.currency_exchange import exchange_service
 import logging
 from app.logs.logger_config import log
@@ -53,8 +53,8 @@ class MyModel:
 
             # Add to cropped_images
             cropped_images.append(cropped_img)
-        if settings.DEBUG:
-            log(f"Detected {len(cropped_images)} objects")
+
+        log(f"Detected {len(cropped_images)} objects", debug=True)
         return cropped_images, boxes_and_classes
 
     @classmethod
@@ -85,8 +85,7 @@ class MyModel:
             else:
                 classified_objects.append(("Unknown", 0.0))
 
-        if settings.DEBUG:
-            log(f"Classified {len(classified_objects)} objects")
+        log(f"Classified {len(classified_objects)} objects", debug=True)
         return classified_objects
 
     @classmethod
@@ -149,8 +148,7 @@ class MyModel:
                 
         currencies = MyModel.calculate_return_currency_value(detected_currencies, return_currency)
         
-        if settings.DEBUG:
-            log(f"Detected currencies with exchange rates added: {currencies}")
+        log(f"Detected currencies with exchange rates added: {currencies}", debug=True)
         return currencies
     
     @classmethod
@@ -158,9 +156,8 @@ class MyModel:
         try:
             exchange_rates = exchange_service.get_exchange_rates()
             
-            if settings.DEBUG:
-                log(f"Exchange rates: {exchange_rates}")
-                log(f"Before calculating exchange rate values: {detected_currencies} - {return_currency}")
+            log(f"Exchange rates: {exchange_rates}", debug=True)
+            log(f"Before calculating exchange rate values: {detected_currencies} - {return_currency}", debug=True)
             
             # ------- Inner function ------- #
             def get_exchange_rate_inner_func(from_currency, to_currency):
@@ -194,12 +191,23 @@ class MyModel:
                     log(f"Warning: No exchange rate found for {coin_name} to {return_currency}", logging.CRITICAL)
                     updated_currencies[coin_label] = CurrencyInfo(quantity= data.quantity, return_currency_value= 0.0)
 
-            if settings.DEBUG:
-                log(f"Calculated exchange rates")
+            log(f"Calculated exchange rates", debug=True)
             return updated_currencies
         
         except Exception as e:
             log(f"Error in calculating the return currency value - {str(e)}", logging.CRITICAL)
-            raise
+            raise ValueError("Error in calculating the return currency value")
+    
+    @classmethod
+    def predict_image(cls, image: Image, return_currency: str, confidence_threshold=0.5):
+        try:
+            cropped_images, boxes_and_classes = cls.detect_and_collect_objects(cls.object_detection_model, image, confidence_threshold= confidence_threshold)
+            classified_objects = cls.classify_objects(cls.classification_model, cropped_images)
+            annotated_image = cls.annotate_image(image, boxes_and_classes, classified_objects)
+            currencies = cls.get_detected_counts(classified_objects, return_currency)
+        except Exception as e:
+            log(f"Error in predicting the image - {str(e)}", logging.CRITICAL)
+            raise ValueError("Error in predicting the image")
+        return annotated_image, currencies
 
 model = MyModel()
