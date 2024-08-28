@@ -36,7 +36,7 @@ class Settings(BaseSettings):
         return datetime.now(utc3_time)
 
     class Config:
-        env_file = ".env",
+        env_file = ".env"
         extra = "allow"
 
 settings = Settings()

@@ -8,9 +8,7 @@ import pytest
 import time
 import logging
 
-
 #-------------------------------------------------------- lifespan -------------------------------------------------------#
-
 
 class TestLifespan:
 
