@@ -2,7 +2,6 @@ import pytest
 import logging
 from app.logs.logger_config import log_message
 
-
 @pytest.fixture
 def logger():
     logger = logging.getLogger('test_logger')

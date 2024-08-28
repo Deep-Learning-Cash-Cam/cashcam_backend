@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from app.schemas.request import EncodedImageRequest
+from app.schemas.image_schemas import EncodedImageString
 from app.core.config import settings
 from unittest.mock import patch
 from fastapi import HTTPException
@@ -16,7 +16,7 @@ client = TestClient(app)
 def test_successful_html_response_with_base64_image():
     with patch.object(settings, 'DEBUG', True):
         img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
-        request_data = EncodedImageRequest(image=img_str)
+        request_data = EncodedImageString(image=img_str)
 
         response = client.post("/api/show_image", json=request_data.model_dump())  # Use model_dump for Pydantic v2
 
@@ -27,7 +27,7 @@ def test_successful_html_response_with_base64_image():
 def test_handles_invalid_base64_image_string(mocker):
     mocker.patch.object(settings, 'DEBUG', True)
     img_str = "invalid_base64_string"
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
     
     # Optionally patch the log function, but ensure the level is an integer
     mock_log = mocker.patch("app.api.routes.log")
@@ -46,7 +46,7 @@ def test_handles_invalid_base64_image_string(mocker):
 def test_returns_status_code_200_for_valid_image_input(mocker):
     mocker.patch.object(settings, 'DEBUG', True)
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
 
     response = client.post("/api/show_image", json=request_data.model_dump())
 
@@ -56,7 +56,7 @@ def test_returns_status_code_200_for_valid_image_input(mocker):
 def test_correctly_processes_valid_base64_image(mocker):
     mocker.patch.object(settings, 'DEBUG', True)
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
 
     response = client.post("/api/show_image", json=request_data.model_dump())
 
@@ -67,7 +67,7 @@ def test_correctly_processes_valid_base64_image(mocker):
 def test_returns_http_500_on_exception(mocker):
     mocker.patch.object(settings, 'DEBUG', True)
     img_str = "invalid_base64_string"  # Intentionally invalid base64 string
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
 
     with patch('app.api.routes.log') as mock_log:
         response = client.post("/api/show_image", json=request_data.model_dump())
@@ -83,7 +83,7 @@ def test_handles_empty_image_string(mocker, caplog):
     mock_error = mocker.patch('app.logs.logger_config.global_logger.error')
 
     img_str = ""  # Empty base64 string
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
 
     # Perform the post request
     with caplog.at_level(logging.ERROR):
@@ -99,7 +99,7 @@ def test_handles_empty_image_string(mocker, caplog):
 def test_show_image_debug_false(mocker):
     mocker.patch.object(settings, 'DEBUG', False)
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
 
     response = client.post("/api/show_image", json=request_data.model_dump())
 
@@ -113,7 +113,7 @@ def test_logs_error_message_on_exception(mocker):
     #img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Truncated base64 string
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA==Invalid"  # Intentionally incorrect padding
     
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
 
     # Patch the log function in the correct module
     with patch('app.api.routes.log') as mock_log:
@@ -127,7 +127,7 @@ def test_logs_error_message_on_exception(mocker):
 def test_image_tag_presence_in_html_response(mocker):
     mocker.patch.object(settings, 'DEBUG', True)
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
 
     response = client.post("/api/show_image", json=request_data.model_dump())
 
@@ -138,7 +138,7 @@ def test_image_tag_presence_in_html_response(mocker):
 def test_correct_html_format(mocker):
     mocker.patch.object(settings, 'DEBUG', True)
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
 
     response = client.post("/api/show_image", json=request_data.model_dump())
 
@@ -149,7 +149,7 @@ def test_correct_html_format(mocker):
 def test_response_content_type_html(mocker):
     mocker.patch.object(settings, 'DEBUG', True)
     img_str = "iVBORw0KGgoAAAANSUhEUgAAAAUA"  # Example base64 string
-    request_data = EncodedImageRequest(image=img_str)
+    request_data = EncodedImageString(image=img_str)
 
     response = client.post("/api/show_image", json=request_data.model_dump())
 

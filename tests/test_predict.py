@@ -5,7 +5,7 @@ class TestPredict:
     # Test a valid base64 image that is processed successfully
     @pytest.mark.asyncio
     async def test_valid_base64_image(self, mocker):
-        from app.api.routes import predict
+        from app.api.endpoints.routes import predict
         from app.schemas import PredictRequest, PredictResponse
         from app.services.currency_exchange import exchange_service
         from app.ml.model import MyModel
@@ -39,7 +39,7 @@ class TestPredict:
     # Test handling of invalid base64 string
     @pytest.mark.asyncio
     async def test_invalid_base64_image(self, mocker):
-        from app.api.routes import predict
+        from app.api.endpoints.routes import predict
         from app.schemas import PredictRequest
         from fastapi import HTTPException
 
@@ -55,7 +55,7 @@ class TestPredict:
     # Test valid return currency conversion (e.g., "NIS" to "ILS")
     @pytest.mark.asyncio
     async def test_valid_return_currency_conversion(self, mocker):
-        from app.api.routes import predict
+        from app.api.endpoints.routes import predict
         from app.schemas import PredictRequest, PredictResponse
         from app.services.currency_exchange import exchange_service
         from app.ml.model import MyModel
@@ -89,7 +89,7 @@ class TestPredict:
     # Test that an invalid return currency triggers a http exception
     @pytest.mark.asyncio
     async def test_invalid_return_currency_raises_http_exception(self, mocker):
-        from app.api.routes import predict
+        from app.api.endpoints.routes import predict
         from app.schemas import PredictRequest
         from fastapi import HTTPException
 
@@ -106,7 +106,7 @@ class TestPredict:
     # Test that an empty image string raises a ValueError for an invalid image
     @pytest.mark.asyncio
     async def test_empty_image_string_raises_value_error(self, mocker):
-        from app.api.routes import predict
+        from app.api.endpoints.routes import predict
         from app.schemas import PredictRequest
         from fastapi import HTTPException
 
@@ -123,7 +123,7 @@ class TestPredict:
     # Test that objects are detected and classified properly
     @pytest.mark.asyncio
     async def test_objects_detected_and_classified_successfully(self, mocker):
-        from app.api.routes import predict
+        from app.api.endpoints.routes import predict
         from app.schemas import PredictRequest, PredictResponse, CurrencyInfo
         from app.services.currency_exchange import exchange_service
         from app.ml.model import MyModel

@@ -100,7 +100,7 @@ class ExchangeRateService:
                 return self.rates
 
         if self.should_update_rates(): # If rates need updating
-            log("Rates need updating, but can't fetch asynchronously. Using old rates." + 
+            log("Rates need updating, but can't fetch asynchronously. Using old rates." +
                 "Last update: " + str(self.last_update), debug=True)
             self.fetch_rates()  # Fetch rates asynchronously
             log("Fetching rates", debug=True)

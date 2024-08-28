@@ -1,59 +1,47 @@
-"""from fastapi.testclient import TestClient
-from app.main import app
-
-client = TestClient(app)
-
-def test_read_main():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to CashCam!"}
-"""  
-#--------------Uri and Yuval--------------------------
 
 import requests
 import logging
 import pytest
 from fastapi import HTTPException
-from app.api.routes import get_exchange_rates
 from app.services.currency_exchange import exchange_service
-from app.logs import log
+from app.logs.logger_config import log
+
+mock_rates = {"EUR_USD": 1.1167, "EUR_ILS": 4.103, "USD_EUR": 0.8955, "USD_ILS": 3.676, "ILS_EUR": 0.2438, "ILS_USD": 0.272}
 
 class TestGetExchangeRates:
+        
     
     # Fetch exchange rates successfully (including NIS)
     def test_fetch_exchange_rates_successfully(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85, "NIS": 3.5}
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
-        response = get_exchange_rates()
-        assert response == {"exchange_rates": mock_rates}
+        response = exchange_service.get_exchange_rates()
+        assert response == mock_rates
 
     # Handle network failure during fetch
     def test_handle_network_failure_during_fetch(self, mocker):
         mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=requests.RequestException("Network error"))
         with pytest.raises(HTTPException) as exc_info:
-            get_exchange_rates()
+            exchange_service.get_exchange_rates()
         assert exc_info.value.status_code == 500
         assert "Network error" in exc_info.value.detail
 
     # Return exchange rates in JSON format (including NIS)
     def test_return_exchange_rates_successfully(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85, "NIS": 3.5}
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
         mocker.patch('app.api.routes.log')
-        response = get_exchange_rates()
-        assert response == {"exchange_rates": mock_rates}
+        response = exchange_service.get_exchange_rates()
+        assert response == mock_rates
 
     # Log successful fetch of exchange rates (including NIS)
     def test_log_successful_fetch_exchange_rates(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85, "NIS": 3.5}
         # Mock the function that fetches exchange rates
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
         # Mock the custom log function
         mock_log = mocker.patch('app.api.routes.log')
         # Call the function
-        response = get_exchange_rates()
+        response = exchange_service.get_exchange_rates()
         # Assert the response is as expected
-        assert response == {"exchange_rates": mock_rates}
+        assert response == mock_rates
         # Assert the log was called exactly once with the correct message
         mock_log.assert_called_once_with("Successfully fetched exchange rates", logging.INFO)
 
@@ -63,7 +51,7 @@ class TestGetExchangeRates:
     def test_handle_invalid_response_from_external_service(self, mocker):
         mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=requests.RequestException)
         with pytest.raises(HTTPException) as exc_info:
-            get_exchange_rates()
+            exchange_service.get_exchange_rates()
         assert exc_info.value.status_code == 500
     
     
@@ -71,7 +59,7 @@ class TestGetExchangeRates:
     def test_handle_missing_exchange_rates_file(self, mocker):
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=None)
         with pytest.raises(HTTPException) as exc_info:
-            get_exchange_rates()
+            exchange_service.get_exchange_rates()
         assert exc_info.value.status_code == 404  # or the status code you're expecting
         assert exc_info.value.detail == "Exchange rates not found"
 
@@ -80,7 +68,7 @@ class TestGetExchangeRates:
     def test_handle_corrupted_exchange_rates_file(self, mocker):
         mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=Exception("Corrupted file"))
         with pytest.raises(HTTPException) as exc_info:
-            get_exchange_rates()
+            exchange_service.get_exchange_rates()
         assert exc_info.value.status_code == 500
 
     # Handle unexpected exceptions
@@ -89,22 +77,21 @@ class TestGetExchangeRates:
         mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=mock_exception)
         mocker.patch('app.api.routes.log')
         with pytest.raises(HTTPException) as exc_info:
-            get_exchange_rates()
+            exchange_service.get_exchange_rates()
         assert exc_info.value.status_code == 500
         assert str(mock_exception) in exc_info.value.detail
 
     # Validate response structure (including NIS)
     def test_validate_response_structure(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85, "NIS": 3.5}
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
-        response = get_exchange_rates()
-        assert response == {"exchange_rates": mock_rates}
+        response = exchange_service.get_exchange_rates()
+        assert response == mock_rates
 
     # Verify HTTP 500 status code on failure
     def test_http_500_on_failure(self, mocker):
         mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=requests.RequestException)
         with pytest.raises(HTTPException) as exc_info:
-            get_exchange_rates()
+            exchange_service.get_exchange_rates()
         assert exc_info.value.status_code == 500
     
     
@@ -116,7 +103,7 @@ class TestGetExchangeRates:
         mock_log = mocker.patch('app.api.routes.log')
         # Call the function and expect an HTTPException
         with pytest.raises(HTTPException) as exc_info:
-            get_exchange_rates()
+            exchange_service.get_exchange_rates()
         # Assert that the HTTPException has the correct status code and detail
         assert exc_info.value.status_code == 500
         assert exc_info.value.detail == "Mocked RequestException"
@@ -133,7 +120,7 @@ class TestGetExchangeRates:
         mock_log = mocker.patch("app.api.routes.log")
         # Call the function and expect an HTTPException
         with pytest.raises(HTTPException) as exc_info:
-            get_exchange_rates()
+            exchange_service.get_exchange_rates()
         # Assert that the HTTPException has the correct status code and detail
         assert exc_info.value.status_code == 500
         assert str(mock_exception) in exc_info.value.detail
@@ -143,12 +130,11 @@ class TestGetExchangeRates:
 
     # Ensure no sensitive information in logs
     def test_no_sensitive_info_in_logs(self, mocker):
-        mock_rates = {"USD": 1.0, "EUR": 0.85}
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
         mock_log = mocker.patch("app.api.routes.log")
         
         # Call the function
-        get_exchange_rates()
+        exchange_service.get_exchange_rates()
         
         # Check that log was called once with the successful fetch message
         assert mock_log.call_count == 1

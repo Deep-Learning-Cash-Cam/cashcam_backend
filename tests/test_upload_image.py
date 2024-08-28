@@ -1,7 +1,6 @@
 import logging
 import re
 from unittest.mock import MagicMock, patch
-import pytest
 from fastapi.testclient import TestClient
 from io import BytesIO
 from PIL import Image

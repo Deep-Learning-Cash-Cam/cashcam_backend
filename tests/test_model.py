@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw
 from app.ml.model import MyModel
 from app.core.config import settings
 from PIL import UnidentifiedImageError
-from app.schemas.response import CurrencyInfo
+from app.schemas.predict_schema import CurrencyInfo
 from app.services.currency_exchange import exchange_service
 
 
