@@ -1,13 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
-import uuid
 from app.core.config import settings
-
-def generate_id(length=16):
-    return str(uuid.uuid4().int)[:length]
-
-# All the models here are used to interact with the database
 
 # User as a db model
 class User(Base):
