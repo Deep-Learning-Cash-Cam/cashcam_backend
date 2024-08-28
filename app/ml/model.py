@@ -6,6 +6,7 @@ from app.schemas.predict_schema import CurrencyInfo
 from app.services.currency_exchange import exchange_service
 import logging
 from app.logs.logger_config import log
+from PIL import UnidentifiedImageError
 
 class MyModel:
     object_detection_model = YOLO(settings.OBJECT_DETECTION_MODEL)
@@ -61,19 +62,23 @@ class MyModel:
         classified_objects = []
 
         for img in cropped_images:
-            # Convert to RGB (YOLO expects RGB images)
-            #img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img_rgb = Image.fromarray(img).convert("RGB")
+            try:
+                # Convert to RGB (YOLO expects RGB images)
+                #img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                img_rgb = Image.fromarray(img).convert("RGB")
 
-            # Perform inference on the original cropped image
-            results = YOLO_model(img_rgb, verbose=False)
+                # Perform inference on the original cropped image
+                results = YOLO_model(img_rgb, verbose=False)
+            except UnidentifiedImageError:
+                classified_objects.append(("Unknown", 0.0))
+                continue
 
             detections = results[0].boxes.xyxy.cpu().numpy()
             classes = results[0].boxes.cls.cpu().numpy()
             confidences = results[0].boxes.conf.cpu().numpy()
             names = YOLO_model.names
 
-            if len(detections) > 0:
+            if len(detections) > 0 and int(classes[0]) in names:
                 class_name = names[int(classes[0])]
                 confidence = confidences[0]
                 classified_objects.append((class_name, confidence))
@@ -85,37 +90,40 @@ class MyModel:
 
     @classmethod
     def annotate_image(cls, image, boxes_and_classes, classified_objects):
+        if len(boxes_and_classes) != len(classified_objects):
+            raise ValueError("The number of bounding boxes and classified objects must match.")
+
         draw = ImageDraw.Draw(image)
         default_color = "red"
-        
+
         for (x1, y1, x2, y2, original_class, confidence), (classified_class, class_confidence) in zip(boxes_and_classes, classified_objects):
+            color = default_color  # Initialize color with default value
+
             # Draw the bounding box (color based on the classification)
             if classified_class != "Unknown":
-                if f"{classified_class}".split(" ")[1] == "NIS":
+                if "NIS" in classified_class:
                     color = "blue"
-                elif f"{classified_class}".split(" ")[1] == "Euro":
+                elif "Euro" in classified_class:
                     color = "orange"
-                elif f"{classified_class}".split(" ")[1] == "USD":
+                elif "USD" in classified_class:
                     color = "green"
-            else:
-                color = default_color
-                
+
             draw.rectangle([x1, y1, x2, y2], outline=color, width=2)
-            
+
             # Create the label
             if classified_class != "Unknown":
                 label = f"{classified_class} ({class_confidence:.2f})"
             else:
                 label = f"{original_class} ({confidence:.2f}) - Unknown"
-        
+
             # Draw the label
             text_bbox = draw.textbbox((x1, y1), label)
-            draw.rectangle(text_bbox, fill= color)
+            draw.rectangle(text_bbox, fill=color)
             draw.text((x1, y1), label, fill="white")
-            
-        #Convert the image to PIL format
+
+            print(f"Drawing bounding box for {classified_class} from {(x1, y1)} to {(x2, y2)}")
+
         image = Image.fromarray(np.array(image))
-        
         return image
 
     @classmethod
@@ -131,14 +139,12 @@ class MyModel:
         # Also, split the class name to the currency and the value ('0.1 NIS' -> 'NIS', (0.1, count))
         detected_currencies = {}
         for class_name, count in counts.items():
-            if class_name != "Unknown":
+            if class_name == "Unknown" or class_name not in cls.currencies_dict:
+                log(f"Warning: Unknown currency class name '{class_name}'", logging.CRITICAL)
+                continue
+            else:
                 multiplier = class_name.split(" ")[0]
-                if class_name in cls.currencies_dict:
-                    # Transform the detected currencies to the 'currency' structure
-                    detected_currencies[cls.currencies_dict[class_name]] = CurrencyInfo(quantity= count, return_currency_value= float(multiplier))
-                else:
-                    log(f"Warning: Unknown currency class name '{class_name}'", logging.CRITICAL)
-                    continue
+                detected_currencies[cls.currencies_dict[class_name]] = CurrencyInfo(quantity=count, return_currency_value=float(multiplier))
                 
         currencies = MyModel.calculate_return_currency_value(detected_currencies, return_currency)
         

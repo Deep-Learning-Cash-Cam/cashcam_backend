@@ -6,6 +6,7 @@ import os
 def setup_global_logger(level=logging.INFO, maxBytes= 10*1024*1024, backupCount=4):
     # Create logs directory if it doesn't exist (log_dir is set to the parent directory of the current file)
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
+    print(f"Log directory: {log_dir}")  # Debugging output
     os.makedirs(log_dir, exist_ok=True)
     
     # Create formatter
@@ -46,8 +47,9 @@ global_logger = setup_global_logger()
 
 # Function to import for logging
 def log(message, level=logging.INFO, debug=False):
-    # If debug is requested but the app is not in debug mode, don't log
     if debug and not settings.DEBUG:
         return
-
+        
+    if isinstance(level, int):
+        level = logging.getLevelName(level)
     log_message(global_logger, level, message)

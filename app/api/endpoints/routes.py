@@ -118,7 +118,7 @@ async def show_image(request: EncodedImageString):
 from app.services.currency_exchange import exchange_service
 
 @router.get("/exchange_rates")
-def get_exchange_rates(user: user_dependency, db: db_dependency):
+def get_rates(user: user_dependency, db: db_dependency):
     try:
         # Only allow admin users to access the exchange rates
         if user and user.role == "admin":

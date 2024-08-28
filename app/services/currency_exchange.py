@@ -97,10 +97,10 @@ class ExchangeRateService:
                 return self.backup_rates
             else: # rates loaded from file
                 log("Loaded rates from file", debug=True)
-                return self.rates    
-                   
+                return self.rates
+
         if self.should_update_rates(): # If rates need updating
-            log("Rates need updating, but can't fetch asynchronously. Using old rates." + 
+            log("Rates need updating, but can't fetch asynchronously. Using old rates." +
                 "Last update: " + str(self.last_update), debug=True)
             self.fetch_rates()  # Fetch rates asynchronously
             log("Fetching rates", debug=True)
@@ -111,15 +111,3 @@ class ExchangeRateService:
         return not self.rates or self.last_update is None or settings.TIME_NOW - self.last_update > timedelta(hours=settings.UPDATE_RATES_INTERVAL_HOURS)
     
 exchange_service = ExchangeRateService()
-    
-    
-    
-    # def get_exchange_ratess(self):
-    #     if self.should_update_rates():
-    #         if not self.load_rates_from_file() or self.should_update_rates():
-    #             log("Rates need updating, but can't fetch asynchronously. Using old rates.")
-    #         else:
-    #             log("Loaded rates from file")
-    #     else:
-    #         log("Using existing rates - No fetch needed", debug=True)
-    #     return self.rates
