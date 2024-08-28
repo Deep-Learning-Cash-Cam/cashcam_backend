@@ -1,4 +1,3 @@
-from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 from datetime import datetime, timedelta, timezone
 
@@ -36,9 +35,8 @@ class Settings(BaseSettings):
     def TIME_NOW(self):
         return datetime.now(utc3_time)
 
-    model_config = ConfigDict(
+    class Config:
         env_file = ".env",
         extra = "allow"
-    )
 
 settings = Settings()
