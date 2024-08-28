@@ -64,13 +64,13 @@ async def predict(request: PredictRequest, user: user_dependency, db: db_depende
                 return PredictResponse(currencies= currencies, image= annotated_image_base64, image_id= image_id)
         except Exception as e:
             log(f"Error in saving the image - {str(e)}", logging.ERROR)
-            raise HTTPException(status_code=500, detail=f"Internal error - {str(e)}")
-    
+
+        return PredictResponse(currencies= currencies, image= annotated_image_base64, image_id= None)
     except ValueError as e:
         log(f"Error in prediction - {str(e)}", logging.ERROR)
-        raise HTTPException(status_code=500, detail=f"Internal error - {str(e)}")
+        raise HTTPException(status_code=400, detail=f"{str(e)}")
     except Exception as e:
-        log(f"General error - {str(e)}", logging.ERROR)
+        log(f"General error - {str(e)}", logging.CRITICAL)
         raise HTTPException(status_code=500, detail=f"General error - {str(e)}")
     
 
@@ -89,9 +89,9 @@ async def upload_image(file: UploadFile = File(...)):
             return JSONResponse(content={"image": img_str}, status_code=200)
         except Exception as e:
             log(f"Error in encoding the image - {str(e)}", logging.ERROR)
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e))
     else:
-        raise HTTPException(status_code=404, detail="This route is only available in debug mode")
+        raise HTTPException(status_code=404, detail="Not found")
 
 @router.post("/show_image")
 async def show_image(request: EncodedImageString):
@@ -110,9 +110,9 @@ async def show_image(request: EncodedImageString):
             return HTMLResponse(content=html_content, status_code=200)
         except Exception as e:
             log(f"Error in showing the image - {str(e)}", logging.ERROR)
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e))
     else:
-        raise HTTPException(status_code=404, detail="This route is only available in debug mode")
+        raise HTTPException(status_code=404, detail="Not found")
 
 # ----------------------------------------------------------- Exchange rates API routes ----------------------------------------------------------- #
 from app.services.currency_exchange import exchange_service

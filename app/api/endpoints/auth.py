@@ -32,6 +32,7 @@ user_dependency = Annotated[user_schemas.User | None, Depends(get_current_user)]
 def register(form_data: user_schemas.UserCreateRequest,user: user_dependency, db: db_dependency):
     # Check if the user is already authenticated
     if user:
+        log(f"User already authenticated", logging.INFO, debug=True)
         return security.create_tokens(token_schemas.TokenData(user_id=user.id, email=user.email))
     
     # Check if a user with the same email already exists
@@ -59,6 +60,7 @@ async def login(form_data: user_schemas.UserLogin, user: user_dependency, db: db
     
     try:
         if user: # User is already authenticated, return the tokens
+            log(f"User already authenticated", logging.INFO, debug=True)
             return security.create_tokens(token_schemas.TokenData(user_id=user.id, email=user.email))
     except Exception as e:
         # User is not authenticated, continue
@@ -87,7 +89,7 @@ def logout(request: Request, response: Response):
 
 
 @auth_router.get("/users/me", response_model=user_schemas.User, status_code=status.HTTP_200_OK)
-async def get_current_user(user: user_dependency):
+async def get_user(user: user_dependency):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user

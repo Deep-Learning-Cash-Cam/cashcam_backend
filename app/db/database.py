@@ -18,6 +18,7 @@ def get_db():
     try:
         yield db # Access db (dependency injection)
     except Exception as e:
-        log(f"Exception caught while accessing the database - {str(e)}", logging.WARNING)
+        log(f"Database notification - {str(e)}", logging.INFO)
+        raise e
     finally:
         db.close()

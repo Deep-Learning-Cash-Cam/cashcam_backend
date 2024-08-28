@@ -2,8 +2,7 @@ fastapi
 authlib
 uvicorn
 google-auth
-starlette
-itsdangerous
+starlette<0.38.0
 python-dotenv
 numpy
 pydantic

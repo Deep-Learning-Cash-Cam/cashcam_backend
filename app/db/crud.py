@@ -9,13 +9,19 @@ from app.logs import log
 # ----------------------------------------------------------- User api ----------------------------------------------------------- #
 
 def get_user(db: Session, user_id: int, email = Optional[str | None]) -> db_models.User | None:
-    user = db.query(db_models.User).filter(db_models.User.id == user_id).first()
-    if user:
-        if email and user.email != email:
-            log(f"User with id:{user_id} does not match the email provided", logging.CRITICAL)
-            return None
-        return user
-    return None
+    try:
+        user = db.query(db_models.User).filter(db_models.User.id == user_id).first()
+        if user:
+            if email and user.email != email:
+                log(f"User with id:{user_id} does not match the email provided", logging.CRITICAL)
+                return None
+            # Remove hashed password from the user object before returning it
+            user.hashed_password = None
+            return user
+        return None
+    except Exception as e:
+        log(f"Failed to get user - {str(e)}", logging.INFO)
+        return None
 
 def get_user_by_email(db: Session, email: str) -> db_models.User | None:
     user = db.query(db_models.User).filter(db_models.User.email == email).first()

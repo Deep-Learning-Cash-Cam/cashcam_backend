@@ -6,13 +6,13 @@ utc3_time = timezone(timedelta(hours=3))
 class Settings(BaseSettings):
     # Global settings
     PROJECT_NAME: str = "CashCam"
-    PROJECT_VERSION: str = "1.0.0"
+    PROJECT_VERSION: str = "1.2.1"
     OBJECT_DETECTION_MODEL: str = "models/bill_coin_yolo_best.pt"
     CLASSIFICATION_MODEL: str = "models/class_YOLO_model_best.pt"
     API_PREFIX: str = "/api"
     TEST_OUTPUT_PATH: str = "tests/test_output.txt"
     LOCAL_IP: str = "0.0.0.0"
-    DATABASE_URL: str = "sqlite:///./sql_cashcam.db" #TODO: Update the database URL (currently dumps to root dir), postgres maybe?
+    DATABASE_URL: str = "sqlite:///./sql_cashcam.db"
     PORT: int = 80
     DEBUG: bool = True
     

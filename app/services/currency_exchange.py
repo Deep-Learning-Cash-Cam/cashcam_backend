@@ -16,6 +16,7 @@ class ExchangeRateService:
     def __init__(self):
         self.rates = {}
         self.last_update = None
+        self.backup_rates = {"EUR_USD": 1.1, "EUR_ILS": 4, "USD_EUR": 0.9, "USD_ILS": 3.6, "ILS_EUR": 0.24, "ILS_USD": 0.27}
 
     # ----------------- Fetch exchange rates from the API, update the rates dictionary and store them in the cache file ----------------- #
     async def fetch_rates(self):
@@ -90,17 +91,35 @@ class ExchangeRateService:
     # ----------------- Get exchange rates from the cache file or fetch them if needed ----------------- #
     # The endpoint function to use to get the exchange rates
     def get_exchange_rates(self):
-        if self.should_update_rates():
-            if not self.load_rates_from_file() or self.should_update_rates():
-                log("Rates need updating, but can't fetch asynchronously. Using old rates.")
-            else:
-                log("Loaded rates from file")
-        else:
-            log("Using existing rates - No fetch needed", debug=True)
+        if not self.rates: # try to load from memory
+            if not self.load_rates_from_file(): # If not in memory, try to load from file
+                log("Failed to load rates. Using base exchange rate.", logging.CRITICAL)
+                return self.backup_rates
+            else: # rates loaded from file
+                log("Loaded rates from file", debug=True)
+                return self.rates    
+                   
+        if self.should_update_rates(): # If rates need updating
+            log("Rates need updating, but can't fetch asynchronously. Using old rates." + 
+                "Last update: " + str(self.last_update), debug=True)
+            self.fetch_rates()  # Fetch rates asynchronously
+            log("Fetching rates", debug=True)
         return self.rates
-
+    
     # Should we update the rates based on last update time. Boolean function
     def should_update_rates(self):
-        return not self.rates or self.last_update is None or settings.TIME_NOW - self.last_update > timedelta(days=1)
+        return not self.rates or self.last_update is None or settings.TIME_NOW - self.last_update > timedelta(hours=settings.UPDATE_RATES_INTERVAL_HOURS)
     
 exchange_service = ExchangeRateService()
+    
+    
+    
+    # def get_exchange_ratess(self):
+    #     if self.should_update_rates():
+    #         if not self.load_rates_from_file() or self.should_update_rates():
+    #             log("Rates need updating, but can't fetch asynchronously. Using old rates.")
+    #         else:
+    #             log("Loaded rates from file")
+    #     else:
+    #         log("Using existing rates - No fetch needed", debug=True)
+    #     return self.rates
