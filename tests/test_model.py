@@ -183,7 +183,7 @@ def test_classify_objects_logs_correct_number_when_debug_enabled(mocker, mock_yo
     
     MyModel.classify_objects(mock_yolo_model, cropped_images)
     
-    mock_log.assert_called_once_with("Classified 1 objects") # Classified 1 image as 'unknown'
+    mock_log.assert_called_once_with('Classified 1 objects', debug=True) # Classified 1 image as 'unknown'
 
 def test_classify_objects_with_invalid_image_handling(mocker, mock_yolo_model):
     mocker.patch("PIL.Image.fromarray", side_effect=UnidentifiedImageError)  # Mock image conversion failure
@@ -443,7 +443,7 @@ class TestGetDetectedCounts:
         assert result['NIS_C_10'].quantity == 2
         assert result['USD_B_1'].quantity == 1
         mock_log.assert_called_with("Detected currencies with exchange rates added: "
-                                    "{'NIS_C_10': CurrencyInfo(quantity=2, return_currency_value=0.1), 'USD_B_1': CurrencyInfo(quantity=1, return_currency_value=1.0)}")
+                                    "{'NIS_C_10': CurrencyInfo(quantity=2, return_currency_value=0.1), 'USD_B_1': CurrencyInfo(quantity=1, return_currency_value=1.0)}", debug=True)
 
     # Test handling of an empty classified objects list
     def test_empty_classified_objects_list(self, mocker):
@@ -808,7 +808,7 @@ class TestMyModel:
         cropped_images, boxes_and_classes = MyModel.detect_and_collect_objects(YOLO_model, image)
 
         # Assertions
-        mock_log.assert_called_once_with("Detected 0 objects")
+        mock_log.assert_called_once_with("Detected 0 objects", debug=True)
 
     def test_calculate_return_currency_value(self, mocker):
         # Mock the exchange service

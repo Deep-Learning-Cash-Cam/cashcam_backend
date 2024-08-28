@@ -17,18 +17,16 @@ class TestGetExchangeRates:
         response = exchange_service.get_exchange_rates()
         assert response == mock_rates
 
-    # Handle network failure during fetch
     def test_handle_network_failure_during_fetch(self, mocker):
-        mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=requests.RequestException("Network error"))
-        with pytest.raises(HTTPException) as exc_info:
-            exchange_service.get_exchange_rates()
-        assert exc_info.value.status_code == 500
-        assert "Network error" in exc_info.value.detail
+        mocker.patch.object(exchange_service, 'fetch_rates', side_effect=requests.RequestException("Network error"))
+        rates = exchange_service.get_exchange_rates()
+        assert rates == exchange_service.backup_rates  # Check if backup rates are returned
+
 
     # Return exchange rates in JSON format (including NIS)
     def test_return_exchange_rates_successfully(self, mocker):
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
-        mocker.patch('app.api.routes.log')
+        mocker.patch('app.api.endpoints.routes.log')
         response = exchange_service.get_exchange_rates()
         assert response == mock_rates
 
@@ -37,7 +35,7 @@ class TestGetExchangeRates:
         # Mock the function that fetches exchange rates
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
         # Mock the custom log function
-        mock_log = mocker.patch('app.api.routes.log')
+        mock_log = mocker.patch('app.api.endpoints.routes.log')
         # Call the function
         response = exchange_service.get_exchange_rates()
         # Assert the response is as expected
@@ -75,7 +73,7 @@ class TestGetExchangeRates:
     def test_handle_unexpected_exceptions(self, mocker):
         mock_exception = requests.RequestException("Connection Error")
         mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=mock_exception)
-        mocker.patch('app.api.routes.log')
+        mocker.patch('app.api.endpoints.routes.log')
         with pytest.raises(HTTPException) as exc_info:
             exchange_service.get_exchange_rates()
         assert exc_info.value.status_code == 500
@@ -100,7 +98,7 @@ class TestGetExchangeRates:
         # Mock the exchange_service to raise a RequestException
         mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=requests.RequestException("Mocked RequestException"))
         # Mock the log function and assign it to a variable
-        mock_log = mocker.patch('app.api.routes.log')
+        mock_log = mocker.patch('app.api.endpoints.routes.log')
         # Call the function and expect an HTTPException
         with pytest.raises(HTTPException) as exc_info:
             exchange_service.get_exchange_rates()
@@ -117,7 +115,7 @@ class TestGetExchangeRates:
         # Mock the exchange_service's get_exchange_rates method to raise an exception
         mocker.patch.object(exchange_service, 'get_exchange_rates', side_effect=mock_exception)
         # Mock the log function and assign the mock object to mock_log
-        mock_log = mocker.patch("app.api.routes.log")
+        mock_log = mocker.patch('app.api.endpoints.routes.log')
         # Call the function and expect an HTTPException
         with pytest.raises(HTTPException) as exc_info:
             exchange_service.get_exchange_rates()
@@ -131,7 +129,7 @@ class TestGetExchangeRates:
     # Ensure no sensitive information in logs
     def test_no_sensitive_info_in_logs(self, mocker):
         mocker.patch.object(exchange_service, 'get_exchange_rates', return_value=mock_rates)
-        mock_log = mocker.patch("app.api.routes.log")
+        mock_log = mocker.patch('app.api.endpoints.routes.log')
         
         # Call the function
         exchange_service.get_exchange_rates()

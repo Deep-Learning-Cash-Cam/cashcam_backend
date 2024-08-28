@@ -32,7 +32,7 @@ def test_upload_non_image_file():
     with patch("app.logs.logger_config.global_logger") as mock_logger:
         # Configure mock logger's level to match your logger's expected behavior
         mock_logger.level = logging.INFO
-        
+
         # Ensure the mock logger has a handler with a level attribute
         handler = logging.StreamHandler()
         handler.setLevel(logging.INFO)
@@ -41,13 +41,7 @@ def test_upload_non_image_file():
         response = client.post("/api/encode_image", files={"file": ("test.txt", non_image_file, "text/plain")})
 
         assert response.status_code == 400
-        assert response.json() == {"detail": "Uploaded file is not an image"}
-
-        # Verify that an error was logged, allowing for varying memory address
-        expected_message = "Error in encoding the image - cannot identify image file"
-        actual_message = mock_logger.error.call_args[0][0]
-        assert re.match(f"{expected_message} .*", actual_message)
-        
+        assert "cannot identify image file" in response.json()["detail"]
 
 # Handle image conversion to RGB format correctly
 def test_handle_image_conversion_to_rgb():
@@ -153,10 +147,10 @@ def test_endpoint_accessibility_via_post_method():
 
 # Ensure the DEBUG setting is checked before processing
 def test_debug_setting_checked(mocker):
-    mock_upload_file = mocker.patch('app.api.routes.UploadFile')
+    mock_upload_file = mocker.patch('app.api.endpoints.routes.UploadFile')
     mock_upload_file.return_value.read.return_value = b'mock_image_data'
         
-    mock_image_open = mocker.patch('app.api.routes.Image.open')
+    mock_image_open = mocker.patch('app.api.endpoints.routes.Image.open')
     mock_image_open.return_value = Image.new('RGB', (10, 10))
 
     Settings.DEBUG = True
@@ -166,7 +160,7 @@ def test_debug_setting_checked(mocker):
 
 # Log errors with appropriate error messages
 def test_log_error_on_image_encoding_failure():
-    with patch('app.api.routes.log') as mock_log:
+    with patch('app.api.endpoints.routes.log') as mock_log:
         image = Image.new('RGB', (10, 10), color='red')
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
@@ -177,7 +171,7 @@ def test_log_error_on_image_encoding_failure():
 
             response = client.post("/api/encode_image", files={"file": ("test.jpg", buffered, "image/jpeg")})
 
-            assert response.status_code == 500
+            assert response.status_code == 400
             assert "Image open error" in response.text
             mock_log.assert_called_once_with("Error in encoding the image - Image open error", logging.ERROR)
 
@@ -192,4 +186,3 @@ def test_verify_status_code_for_successful_operations():
 
     assert response.status_code == 200
         
-

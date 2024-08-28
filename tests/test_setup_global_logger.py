@@ -90,7 +90,7 @@ class TestSetupGlobalLogger:
         mock_file_handler = mocker.patch('app.logs.logger_config.RotatingFileHandler')
         mock_file_handler.return_value = mocker.Mock()  # Ensure it has return_value
 
-        setup_global_logger(max_bytes=0)
+        setup_global_logger(maxBytes=0)
 
         # Change it to your own path
         log_dir = 'C:\\Users\\Uri Beeri\\Computer Science\\final-project-deep-learning\\app\\logs\\..\\logs\\cashcam_log.log'
@@ -105,7 +105,7 @@ class TestSetupGlobalLogger:
         mock_file_handler = mocker.patch('app.logs.logger_config.RotatingFileHandler')
         mock_file_handler.return_value = mocker.Mock()  # Ensure it has return_value
 
-        setup_global_logger(backup_count=0)
+        setup_global_logger(backupCount=0)
 
         # Change it to your own path
         log_dir = 'C:\\Users\\Uri Beeri\\Computer Science\\final-project-deep-learning\\app\\logs\\..\\logs\\cashcam_log.log'
