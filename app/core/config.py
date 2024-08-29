@@ -1,3 +1,5 @@
+import base64
+import uuid
 from pydantic_settings import BaseSettings
 from datetime import datetime, timedelta, timezone
 
@@ -24,7 +26,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     
     # Google OAuth2
-    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_IOS_ID: str
+    GOOGLE_CLIENT_ANDROID_ID: str
     
     # Exchange rate API
     EXCHANGE_RATE_API_KEY: str
@@ -34,6 +37,13 @@ class Settings(BaseSettings):
     @property
     def TIME_NOW(self):
         return datetime.now(utc3_time)
+    
+    # ID generation
+    @staticmethod
+    def GET_ID():
+        uuid_str = str(uuid.uuid4())
+        encoded_bytes = base64.urlsafe_b64encode(uuid_str.encode()).decode()
+        return encoded_bytes[:16]
 
     class Config:
         env_file = ".env"

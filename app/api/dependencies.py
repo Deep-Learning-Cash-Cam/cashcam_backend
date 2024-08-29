@@ -22,12 +22,13 @@ async def get_current_user(request: Request, db: db_dependancy):
         # Else, get token from the request's Authorization header
         token = request.headers.get("Authorization")
         if token and token.startswith("Bearer "):
-            try:
+            try: # Try to verify the token
                 payload = verify_jwt_token(token.split()[1])
                 if payload is None: # token is invalid, return None
                     log(f"Token is invalid", logging.INFO, debug=True)
                     return None
                 
+                # Get the user_id and email from the token
                 user_id = payload.get("sub")
                 user_email = payload.get("email")
                 if not user_id or not user_email:

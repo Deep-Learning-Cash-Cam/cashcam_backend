@@ -135,45 +135,58 @@ async def refresh_token(refresh_token: str, user: user_dependency):
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
+CLIENT_IDS = [settings.GOOGLE_CLIENT_IOS_ID, settings.GOOGLE_CLIENT_ANDROID_ID]
 
 @auth_router.post("/google-signin")
 async def google_signin(token_data: token_schemas.GoogleToken, db: db_dependency):
-    token_exception = HTTPException(status_code=401, detail="Invalid token")
-    
+    error_message = "Invalid token"
+    token_exception = HTTPException(status_code=401, detail=f"Failed to authenticate with Google-Auth: {error_message}")
     try:
-        # Verify the token using Google's verification method
-        id_info = id_token.verify_oauth2_token(token_data.token_id, requests.Request(), GOOGLE_CLIENT_ID)
+        for GOOGLE_CLIENT_ID in CLIENT_IDS: # Try each client ID
+            try:
+                # Verify the token using Google's verification method
+                id_info = id_token.verify_oauth2_token(token_data.token_id, requests.Request(), GOOGLE_CLIENT_ID)
 
-        # User ID doesn't match the user ID in the token
-        if id_info['aud'] != GOOGLE_CLIENT_ID:
-            log(f"Invalid client ID: {id_info['aud']}", logging.WARNING, debug=True)
-            raise token_exception
+                # User ID doesn't match the user ID in the token
+                if id_info['aud'] != GOOGLE_CLIENT_ID:
+                    log(f"Invalid client ID: {id_info['aud']}", logging.WARNING, debug=True)
+                    error_message = "Invalid client ID"
+                    continue
 
-        # Optionally, check if the token is issued by Google accounts
-        if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-            log(f"Invalid issuer: {id_info['iss']}", logging.WARNING, debug=True)
-            raise token_exception
+                # Optionally, check if the token is issued by Google accounts
+                if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                    log(f"Invalid issuer: {id_info['iss']}", logging.WARNING, debug=True)
+                    error_message = "Invalid issuer"
+                    continue
 
-        # User is authenticated, and you can retrieve user information
-        user_id = id_info['sub']
-        email = id_info.get('email')
-        name = id_info.get('name')
-        if not email or not name or not user_id:
-            log(f"Email / name / user_id not found in token: {id_info}", logging.ERROR, debug=True)
-            raise token_exception
+                # User is authenticated, and you can retrieve user information
+                user_id = id_info['sub']
+                email = id_info.get('email')
+                name = id_info.get('name')
+                if not email or not name or not user_id:
+                    log(f"Email / name / user_id not found in token: {id_info}", logging.ERROR, debug=True)
+                    error_message = "Email / name / user_id not found in token"
+                    continue
 
-        # Register the user if they don't exist in the database
-        new_user = crud.get_or_create_user_by_google_id(db, google_id=user_id, email=email, name=name)
-        if not new_user:
-            log(f"User creation failed: {email}", logging.CRITICAL)
-            raise token_exception
-        
-        return security.create_tokens(token_schemas.TokenData(user_id=new_user.id, email=new_user.email))
+                # Register the user if they don't exist in the database
+                new_user = crud.get_or_create_user_by_google_id(db, google_id=user_id, email=email, name=name)
+                if not new_user:
+                    log(f"User creation failed: {email}", logging.CRITICAL)
+                    # Can't allow this to fail, raise an exception
+                    error_message = "User creation error"
+                    raise token_exception
+                
+                # User authenticated, return the tokens
+                return security.create_tokens(token_schemas.TokenData(user_id=new_user.id, email=new_user.email))
 
-    except ValueError as e:
-        # Invalid token
-        raise HTTPException(status_code=401, detail=f"Invalid token: {e}")
-
+            except ValueError as e:
+                # Invalid token, try the next client ID
+                continue
+            
+        # All client IDs failed
+        log(f"Invalid token: {token_data.token_id}", logging.WARNING, debug=True)
+        raise token_exception
+    
     except Exception as e:
+        log(f"Error in google_signin: {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
