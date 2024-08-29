@@ -26,7 +26,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     
     # Google OAuth2
-    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_IOS_ID: str
+    GOOGLE_CLIENT_ANDROID_ID: str
     
     # Exchange rate API
     EXCHANGE_RATE_API_KEY: str

@@ -13,7 +13,7 @@ password_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__m
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 # Create an access token for JWT (JSON Web Token) for the user
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     # Copy the data
     to_encode = data.copy()
     
@@ -33,7 +33,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 # Create a refresh token for JWT (JSON Web Token)
-def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     # Copy the data
     to_encode = data.copy()
     
@@ -96,38 +96,5 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return password_context.hash(password)
 
-
-
-
-# # Verify a JSON web token
-# def verify_token(token: str, token_type: str) -> Optional[dict]:
-#     try: #Check if the token is access or refresh
-#         if token_type == "access":
-#             payload = jwt.decode(token, settings.JWT_ACCESS_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-#         elif token_type == "refresh":
-#             payload = jwt.decode(token, settings.JWT_REFRESH_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-#         else: # Token type is invalid, raise an exception
-#             log(f"Invalid token type was sent. Got {token_type}", logging.WARNING)
-#             raise ValueError(f"Invalid token type! Got: {token_type}")
-        
-#         # Check if the token type matches the expected token type
-#         if payload["token_type"] != token_type:
-#             log(f"Token type mismatch. Expected: {token_type}, Got: {payload['token_type']}", logging.WARNING)
-#             raise ValueError("Token type mismatch")
-        
-#         # Check if the token is expired
-#         if "exp" not in payload:
-#             log(f"Token does not have an expiration time", logging.ERROR)
-#             raise ValueError("Token does not have an expiration time")
-        
-#         if settings.TIME_NOW >= payload["exp"]:
-#             log(f"{token_type} token has expired", logging.INFO, debug=True)
-#             raise ValueError(f"{token_type.capitalize()} token has expired")
-        
-#         # Return the payload if all checks pass
-#         return payload
-    
-#     except (JWTError, ValueError) as e: # If an error occurs, log it and return None
-#         log(f"Error while verifying token: {str(e)}", logging.ERROR)
-#         return None
-
+# Define what functions to import
+__all__ = ['create_tokens','verify_jwt_token','verify_password','get_password_hash']
