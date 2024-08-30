@@ -3,7 +3,7 @@ from typing import Annotated, Optional
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from datetime import timedelta
+from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from app.core.config import settings
 from app.logs.logger_config import log

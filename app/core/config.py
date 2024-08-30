@@ -45,6 +45,12 @@ class Settings(BaseSettings):
         encoded_bytes = base64.urlsafe_b64encode(uuid_str.encode()).decode()
         return encoded_bytes[:16]
 
+    @staticmethod
+    def GET_ID():
+        uuid_str = str(uuid.uuid4())
+        encoded_bytes = base64.urlsafe_b64encode(uuid_str.encode()).decode()
+        return encoded_bytes[:16]
+
     class Config:
         env_file = ".env"
         extra = "allow"

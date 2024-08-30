@@ -136,7 +136,6 @@ def get_rates(user: user_dependency, db: db_dependency):
     
 # ----------------------------------------------------------- User routes ----------------------------------------------------------- #
 
-#TODO: TEST THIS ROUTE
 @router.post("/flag_image/{image_id}")
 async def flag_image(user: user_dependency, db: db_dependency, image_id: str):
     if not user:
@@ -149,8 +148,6 @@ async def flag_image(user: user_dependency, db: db_dependency, image_id: str):
     except Exception as e:
         return {"message": "Error in flagging the image"}
     
-    
-# TODO: TEST THIS ROUTE
 @router.get("/get_images")
 async def get_image_history(user: user_dependency, db: db_dependency):
     #Check if the user exists
