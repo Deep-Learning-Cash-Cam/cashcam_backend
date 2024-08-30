@@ -98,6 +98,7 @@ async def show_image(request: EncodedImageString):
     if settings.DEBUG:
         try:
             img_str = request.image
+            decoded_img = base64.b64decode(img_str)
             
             # Check for an empty base64 string
             if not img_str:
@@ -110,14 +111,14 @@ async def show_image(request: EncodedImageString):
             <html>
                 <body>
                     <h1>Uploaded Image</h1>
-                    <img src="data:image/jpeg;base64,{img_str}" />
+                    <img src="data:image/jpeg;base64,{decoded_img}" />
                 </body>
             </html>
             """
             return HTMLResponse(content=html_content, status_code=200)
         except Exception as e:
             log(f"Error in showing the image - {str(e)}", logging.ERROR)
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail="Error in showing the image")
     else:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -144,7 +145,7 @@ def get_rates(user: user_dependency, db: db_dependency):
 
 
 @router.post("/flag_image/{image_id}")
-async def flag_image(user: user_dependency, db: db_dependency, image_id: int):
+async def flag_image(user: user_dependency, db: db_dependency, image_id: str):
     if not user:
         raise HTTPException(status_code=401, detail="User not found - Unauthorized")
     try:
