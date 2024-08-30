@@ -54,8 +54,7 @@ app = FastAPI(lifespan=lifespan, title=settings.PROJECT_NAME, version=settings.P
 app.include_router(api_router, prefix=settings.API_PREFIX)
 app.include_router(auth_router, prefix="/auth")
 
-# Global exception handlers
-
+# Global exception handler
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = exc.errors()
@@ -78,7 +77,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 # Root route
-
 user_dependency = Annotated[user_schemas.User | None, Depends(get_current_user)]
 
 @app.get("/")

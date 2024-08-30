@@ -8,7 +8,7 @@ from app.logs import log
 
 # ----------------------------------------------------------- User api ----------------------------------------------------------- #
 
-def get_user(db: Session, user_id: int, email = Optional[str | None]) -> db_models.User | None:
+def get_user(db: Session, user_id: str, email = Optional[str | None]) -> db_models.User | None:
     try:
         user = db.query(db_models.User).filter(db_models.User.id == user_id).first()
         if user:
@@ -74,7 +74,7 @@ def authenticate_user(db: Session, email: str, password: str) -> db_models.User 
     return user
 
 # Update user information
-def update_user(db: Session, user_id: int, user_update: user_schemas.UserUpdate) -> db_models.User | None:
+def update_user(db: Session, user_id: str, user_update: user_schemas.UserUpdate) -> db_models.User | None:
     # Find the user in the database
     db_user = db.query(db_models.User).filter(db_models.User.id == user_id).first()
     
@@ -91,7 +91,7 @@ def update_user(db: Session, user_id: int, user_update: user_schemas.UserUpdate)
     return db_user
 
 # Update user password
-def update_user_password(db: Session, user_id: int, user_update: user_schemas.UserUpdatePassword) -> db_models.User | None:
+def update_user_password(db: Session, user_id: str, user_update: user_schemas.UserUpdatePassword) -> db_models.User | None:
     # Find the user in the database
     db_user = db.query(db_models.User).filter(db_models.User.id == user_id).first()
     
@@ -106,7 +106,7 @@ def update_user_password(db: Session, user_id: int, user_update: user_schemas.Us
     return db_user
 
 # Delete a user from the database by id
-def delete_user(db: Session, user_id: int) -> bool:
+def delete_user(db: Session, user_id: str) -> bool:
     # Find the user in the database
     db_user = db.query(db_models.User).filter(db_models.User.id == user_id).first()
     
@@ -133,15 +133,15 @@ def get_or_create_user_by_google_id(db: Session, google_id: str, email: str, nam
 # ----------------------------------------------------------- Image api ----------------------------------------------------------- #
 
 # Get an image by the image id
-def get_image(db: Session, image_id: int) -> db_models.Image | None:
+def get_image(db: Session, image_id: str) -> db_models.Image | None:
     image = db.query(db_models.Image).filter(db_models.Image.id == image_id).first()
     if image:
         return image
 
 # Add an image to the database and link it to a user by user id
-def save_image(db: Session, image: str, user_id: int) -> str:
+def save_image(db: Session, image: str, user_id: str, currencies: dict[str: int]) -> str:
     log(f"Adding image to the database for user id:{user_id}", debug=True)
-    db_image = db_models.Image(base64_string= image, user_id=user_id, flagged=False)
+    db_image = db_models.Image(base64_string= image, user_id=user_id, flagged=False, currencies=currencies)
     db.add(db_image)
     db.commit()
     db.refresh(db_image)
@@ -149,7 +149,7 @@ def save_image(db: Session, image: str, user_id: int) -> str:
     return db_image.id
 
 # Get all images from a user by user id
-def get_images_by_user_id(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> list[db_models.Image] | None:
+def get_images_by_user_id(db: Session, user_id: str, skip: int = 0, limit: int = 100) -> list[db_models.Image] | None:
     images = db.query(db_models.Image).filter(db_models.Image.user_id == user_id).offset(skip).limit(limit).all()
     if images:
         return images
@@ -161,12 +161,12 @@ def get_flagged_images(db: Session, skip: int = 0, limit: int = 100) -> list[db_
         return flagged_images
 
 # Get all flagged images from a user by user id
-def get_flagged_images_by_user_id(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> list[db_models.Image] | None:
+def get_flagged_images_by_user_id(db: Session, user_id: str, skip: int = 0, limit: int = 100) -> list[db_models.Image] | None:
     flagged_images = db.query(db_models.Image).filter(db_models.Image.user_id == user_id, db_models.Image.flagged == True).offset(skip).limit(limit).all()
     if flagged_images:
         return flagged_images
     
-def flag_image(db: Session, user_id: int, image_id: str) -> bool:
+def flag_image(db: Session, user_id: str, image_id: str) -> bool:
     db_image = db.query(db_models.Image).filter(db_models.Image.id == image_id, db_models.Image.user_id == user_id).first()
     if db_image:
         db_image.flagged = True

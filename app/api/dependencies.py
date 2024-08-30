@@ -29,8 +29,8 @@ async def get_current_user(request: Request, db: db_dependancy):
                     return None
                 
                 # Get the user_id and email from the token
-                user_id = payload.get("sub")
-                user_email = payload.get("email")
+                user_id: str = payload.get("sub")
+                user_email: str = payload.get("email")
                 if not user_id or not user_email:
                     log(f"Token is missing fields", logging.INFO, debug=True)
                     return None # Return None if fields are missing

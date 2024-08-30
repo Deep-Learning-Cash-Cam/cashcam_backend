@@ -134,6 +134,7 @@ async def refresh_token(refresh_token: str, user: user_dependency):
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from google.auth.exceptions import GoogleAuthError
 
 CLIENT_IDS = [settings.GOOGLE_CLIENT_IOS_ID, settings.GOOGLE_CLIENT_ANDROID_ID]
 
@@ -181,6 +182,12 @@ async def google_signin(token_data: token_schemas.GoogleToken, db: db_dependency
 
             except ValueError as e:
                 # Invalid token, try the next client ID
+                continue
+            
+            except GoogleAuthError as e:
+                # Issuer invalid error
+                log(f"GoogleAuthError: {str(e)}", logging.ERROR, debug=True)
+                error_message = "Google authentication failed"
                 continue
             
         # All client IDs failed

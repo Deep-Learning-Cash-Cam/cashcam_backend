@@ -38,7 +38,7 @@ class UserCreateRequest(UserBase):
 # How a user will be returned from the API
 class User(UserBase):
     name: str
-    id: int
+    id: str
     role: str
     google_id: Optional[str] = None
     # Exclude the hashed_password field from the response!

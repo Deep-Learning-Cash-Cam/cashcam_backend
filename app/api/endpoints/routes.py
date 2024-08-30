@@ -59,8 +59,10 @@ async def predict(request: PredictRequest, user: user_dependency, db: db_depende
         # Save the image to the user's images
         try:
             if user:
-                user_id = user.id
-                image_id = crud.save_image(db, annotated_image_base64, user_id)
+                # Parse the currencies to a dictionary of [currency(str): amount(int)]
+                currency_db_compatible = {currency: currency_info.quantity for currency, currency_info in currencies.items()}
+                
+                image_id = crud.save_image(db, annotated_image_base64, user.id, currencies= currency_db_compatible)
                 return PredictResponse(currencies= currencies, image= annotated_image_base64, image_id= image_id)
         except Exception as e:
             log(f"Error in saving the image - {str(e)}", logging.ERROR)
@@ -136,7 +138,6 @@ def get_rates(user: user_dependency, db: db_dependency):
     
 # ----------------------------------------------------------- User routes ----------------------------------------------------------- #
 
-#TODO: TEST THIS ROUTE
 @router.post("/flag_image/{image_id}")
 async def flag_image(user: user_dependency, db: db_dependency, image_id: str):
     if not user:
