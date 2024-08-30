@@ -38,7 +38,7 @@ def test_handles_invalid_base64_image_string(mocker):
     
     # Assert that a 400 status code is returned for an invalid base64 string
     assert response.status_code == 400
-    assert response.json() == {"detail": "Incorrect padding"}
+    assert response.json() == {"detail": "Error in showing the image"}
     
     # Check that the log was called with the expected level (logging.ERROR, which is 40)
     mock_log.assert_called_once_with("Error in showing the image - Incorrect padding", logging.ERROR)

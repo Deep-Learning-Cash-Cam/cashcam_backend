@@ -111,7 +111,7 @@ async def show_image(request: EncodedImageString):
             <html>
                 <body>
                     <h1>Uploaded Image</h1>
-                    <img src="data:image/jpeg;base64,{decoded_img}" />
+                    <img src="data:image/jpeg;base64,{img_str}" />
                 </body>
             </html>
             """
