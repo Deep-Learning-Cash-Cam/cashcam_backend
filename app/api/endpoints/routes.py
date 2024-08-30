@@ -99,6 +99,13 @@ async def show_image(request: EncodedImageString):
         try:
             img_str = request.image
             
+            # Check for an empty base64 string
+            if not img_str:
+                raise ValueError("Empty base64 string")
+            
+            # Attempt to decode the base64 string to trigger any errors
+            base64.b64decode(img_str)
+            
             html_content = f"""
             <html>
                 <body>
@@ -135,7 +142,7 @@ def get_rates(user: user_dependency, db: db_dependency):
     
 # ----------------------------------------------------------- User routes ----------------------------------------------------------- #
 
-#TODO: TEST THIS ROUTE
+
 @router.post("/flag_image/{image_id}")
 async def flag_image(user: user_dependency, db: db_dependency, image_id: int):
     if not user:
@@ -149,7 +156,7 @@ async def flag_image(user: user_dependency, db: db_dependency, image_id: int):
         return {"message": "Error in flagging the image"}
     
     
-# TODO: TEST THIS ROUTE
+
 @router.get("/get_images")
 async def get_image_history(user: user_dependency, db: db_dependency):
     #Check if the user exists
