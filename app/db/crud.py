@@ -12,12 +12,15 @@ def get_user(db: Session, user_id: str, email = Optional[str | None]) -> db_mode
     try:
         user = db.query(db_models.User).filter(db_models.User.id == user_id).first()
         if user:
-            if email and user.email != email:
+            # Copy the user object to avoid changing the original object
+            user_copy = user.copy()
+            
+            if email and user_copy.email != email:
                 log(f"User with id:{user_id} does not match the email provided", logging.CRITICAL)
                 return None
             # Remove hashed password from the user object before returning it
-            user.hashed_password = None
-            return user
+            user_copy.hashed_password = None
+            return user_copy
         return None
     except Exception as e:
         log(f"Failed to get user - {str(e)}", logging.INFO)
@@ -43,7 +46,7 @@ def create_user(db: Session, user: user_schemas.UserCreateRequest) -> db_models.
     hashed_password = get_password_hash(user.password)
     db_user = db_models.User(
         email=user.email,
-        hashed_password=hashed_password,
+        hashed_password= hashed_password,
         name=user.name
         )
     
@@ -63,11 +66,10 @@ def create_user(db: Session, user: user_schemas.UserCreateRequest) -> db_models.
 def authenticate_user(db: Session, email: str, password: str) -> db_models.User | None:
     # Query the database for a user with the given email
     user = db.query(db_models.User).filter(db_models.User.email == email).first()
-    
     # Check if a user was found and if so, verify the password
     if not user:
         return None
-    
+    log(f"User found: {user}")
     if not verify_password(password, user.hashed_password):
         return None
     

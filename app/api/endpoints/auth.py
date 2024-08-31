@@ -71,6 +71,7 @@ async def login(form_data: user_schemas.UserLogin, user: user_dependency, db: db
     
     # No user is found. Check if the email and password are correct
     found_user = crud.authenticate_user(db, email=form_data.email, password=form_data.password)
+    log(f"here2: {found_user}")
     if not found_user: # User not found
         raise credentials_exception
     
