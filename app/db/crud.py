@@ -7,20 +7,17 @@ from app.core.security import get_password_hash, verify_password
 from app.logs import log
 
 # ----------------------------------------------------------- User api ----------------------------------------------------------- #
-
+# Get a user from the DB
 def get_user(db: Session, user_id: str, email = Optional[str | None]) -> db_models.User | None:
     try:
         user = db.query(db_models.User).filter(db_models.User.id == user_id).first()
         if user:
-            # Copy the user object to avoid changing the original object
-            user_copy = user.copy()
             
-            if email and user_copy.email != email:
+            if email and user.email != email:
                 log(f"User with id:{user_id} does not match the email provided", logging.CRITICAL)
                 return None
-            # Remove hashed password from the user object before returning it
-            user_copy.hashed_password = None
-            return user_copy
+
+            return user
         return None
     except Exception as e:
         log(f"Failed to get user - {str(e)}", logging.INFO)

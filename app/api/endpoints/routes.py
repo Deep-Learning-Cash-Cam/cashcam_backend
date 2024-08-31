@@ -59,12 +59,9 @@ async def predict(request: PredictRequest, user: user_dependency, db: db_depende
         # Save the image to the user's images
         try:
             if user:
-                log(f"user before: {user}")
                 # Parse the currencies to a dictionary of [currency(str): amount(int)]
                 currency_db_compatible = {currency: currency_info.quantity for currency, currency_info in currencies.items()}
-                
                 image_id = crud.save_image(db, annotated_image_base64, user.id, currencies= currency_db_compatible)
-                log(f"user after: {user}")
                 return PredictResponse(currencies= currencies, image= annotated_image_base64, image_id= image_id)
         except Exception as e:
             log(f"Error in saving the image - {str(e)}", logging.ERROR)
@@ -153,7 +150,7 @@ async def flag_image(user: user_dependency, db: db_dependency, image_id: str):
         return {"message": "Error in flagging the image"}
     
     
-# TODO: TEST THIS ROUTE
+# Get all images from the user
 @router.get("/get_images")
 async def get_image_history(user: user_dependency, db: db_dependency):
     #Check if the user exists

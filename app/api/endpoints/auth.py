@@ -30,7 +30,7 @@ user_dependency = Annotated[user_schemas.User | None, Depends(get_current_user)]
 
 # Register a new user locally using name, email and password
 @auth_router.post("/register", response_model=token_schemas.Token)
-def register(form_data: user_schemas.UserCreateRequest,user: user_dependency, db: db_dependency):
+def register(form_data: user_schemas.UserCreateRequest, user: user_dependency, db: db_dependency):
     success_message = "User registered successfully"
     # Check if the user is already authenticated
     if user:
@@ -78,7 +78,7 @@ async def login(form_data: user_schemas.UserLogin, user: user_dependency, db: db
     return security.create_tokens(token_schemas.TokenData(user_id=found_user.id, email=found_user.email))
 
 
-# TODO: TEST THIS ROUTE
+# LOGOUT SHOULD BE DONE IN THE FRONTEND BY DELETEING THE TOKENS
 # Logout user by deleting the refresh token and access token
 @auth_router.post("/logout")
 def logout(request: Request, response: Response):
@@ -91,12 +91,12 @@ def logout(request: Request, response: Response):
     
     return {"detail": "Successfully logged out"}
 
-
+# Return the current user's information
 @auth_router.get("/users/me", response_model=user_schemas.User, status_code=status.HTTP_200_OK)
 async def get_user(user: user_dependency):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return user_schemas.User(id=user.id, email=user.email, name=user.name, role=user.role, google_id=user.google_id)
 
 
 # Used to create tokens with password and email
@@ -146,7 +146,7 @@ CLIENT_IDS = [settings.GOOGLE_CLIENT_IOS_ID, settings.GOOGLE_CLIENT_ANDROID_ID]
 async def google_signin(token_data: token_schemas.GoogleToken, db: db_dependency):
     error_message = "Invalid token"
     token_exception = HTTPException(
-        status_code=401, 
+        status_code=401,
         detail={"error": f"Failed to authenticate with Google-Auth: {error_message}",
                 "identifier": "google_auth_error"})
     

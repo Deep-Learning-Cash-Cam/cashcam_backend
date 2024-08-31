@@ -17,7 +17,7 @@ async def get_current_user(request: Request, db: db_dependancy):
         # Check if the user is already in the request's state
         if hasattr(request.state, 'user') and request.state.user and "id" in request.state.user:
             log(f"User found in request state", logging.INFO, debug=True)
-            return get_user(db, user_id=request.state.user["id"])
+            return get_user(db, request.state.user["id"])
         
         # Else, get token from the request's Authorization header
         token = request.headers.get("Authorization")
@@ -36,6 +36,7 @@ async def get_current_user(request: Request, db: db_dependancy):
                     return None # Return None if fields are missing
                 
                 # Get the user from the database
+
                 user = get_user(db, user_id, email=user_email)
                 if not user:
                     log(f"User not found in the database", logging.INFO, debug=True)
