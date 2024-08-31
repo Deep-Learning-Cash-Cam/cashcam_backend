@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from app.core import security
 from app.schemas import user_schemas as user_schemas
@@ -30,6 +31,7 @@ user_dependency = Annotated[user_schemas.User | None, Depends(get_current_user)]
 # Register a new user locally using name, email and password
 @auth_router.post("/register", response_model=token_schemas.Token)
 def register(form_data: user_schemas.UserCreateRequest,user: user_dependency, db: db_dependency):
+    success_message = "User registered successfully"
     # Check if the user is already authenticated
     if user:
         log(f"User already authenticated", logging.INFO, debug=True)
@@ -46,7 +48,8 @@ def register(form_data: user_schemas.UserCreateRequest,user: user_dependency, db
         log(f"User creation failed: {form_data}", logging.ERROR)
         raise HTTPException(status_code=400)
     
-    return security.create_tokens(token_schemas.TokenData(user_id=new_user.id, email=new_user.email))
+    # Return a success message and let the user know they can login under /auth/login
+    return JSONResponse(content={"detail": success_message}, status_code=200)
 
 
 # Local login route (email and password)
@@ -141,7 +144,11 @@ CLIENT_IDS = [settings.GOOGLE_CLIENT_IOS_ID, settings.GOOGLE_CLIENT_ANDROID_ID]
 @auth_router.post("/google-signin")
 async def google_signin(token_data: token_schemas.GoogleToken, db: db_dependency):
     error_message = "Invalid token"
-    token_exception = HTTPException(status_code=401, detail=f"Failed to authenticate with Google-Auth: {error_message}")
+    token_exception = HTTPException(
+        status_code=401, 
+        detail={"error": f"Failed to authenticate with Google-Auth: {error_message}",
+                "identifier": "google_auth_error"})
+    
     try:
         for GOOGLE_CLIENT_ID in CLIENT_IDS: # Try each client ID
             try:
@@ -195,5 +202,10 @@ async def google_signin(token_data: token_schemas.GoogleToken, db: db_dependency
         raise token_exception
     
     except Exception as e:
+        if isinstance(e.detail, dict) and e.detail.get("identifier") == "google_auth_error":
+        # token_exception was raised, re-raise it
+            raise e
+        
+        # General error
         log(f"Error in google_signin: {str(e)}", logging.ERROR)
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")

@@ -26,6 +26,3 @@ venv/
 
 # Database files
 *.db
-
-# Model files
-*.pt
