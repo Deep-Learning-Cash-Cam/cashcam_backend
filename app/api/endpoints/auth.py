@@ -81,8 +81,8 @@ async def login(form_data: user_schemas.UserLogin, user: user_dependency, db: db
 # Logout user by deleting the refresh token and access token
 @auth_router.post("/logout")
 def logout(request: Request, response: Response):
-    # Delete the user from the session
-    request.session.pop("user", None)
+    # Set the user to None
+    request.state.user = None
     
     # Delete the access token and refresh token from the cookies
     response.delete_cookie("access_token")
