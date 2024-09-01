@@ -1,4 +1,5 @@
 # CashCam
+![icon_small](https://github.com/user-attachments/assets/abd3257d-f239-47de-a877-5704a8095d5a)
 
 CashCam is an innovative app that allows users to take pictures of cash in different currencies (USD, EURO, ILS), detects and classifies the coins and bills, sums up the total amount, calculates the equivalent in a desired currency, and returns the annotated image with the information back to the user.
 
