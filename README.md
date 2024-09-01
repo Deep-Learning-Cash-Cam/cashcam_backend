@@ -21,14 +21,14 @@ Businesses can use CashCam to keep track of daily revenues. By saving pictures o
 
 - **Backend**: Built using Python and FastAPI for efficient performance.
 - **Frontend**: Developed using Flutter for a smooth user experience.
-- **Platform**: Currently available for iPhone, with Android support coming soon.
+- **Platform**: Currently available for iPhone and Android support.
 - **Exchange Rates**: Real-time and daily updated exchange rates are fetched to provide accurate currency conversions.
 - **Google Registration**: Users can easily register through their Google account.
 - **Server Communication**: The app communicates with a server for sending images to the detection model and receiving classification results, as well as interacting with a database for user data.
 
 ## Server & Database
 
-- **Database**: Stores user information and will soon include past images for each user.
+- **Database**: SQLite Db. Stores user information and image history. Local cache is also used for logs and fetched data.
 - **Detection Model**: The server runs the detection and classification model.
 - **Communication**: The app seamlessly communicates with the server for image processing and data storage.
 
@@ -41,7 +41,7 @@ The app is currently set up to handle USD, EURO, and ILS, but can easily be expa
 This project was developed by:
 
 - [UriB1](https://github.com/UriBeeri)
-- Add yours
-- Add yours
-- Add yours
-- Add yours
+- [ItayE97](https://github.com/ItayE97)
+- [RoDanielle](https://github.com/RoDanielle)
+- [YuvalHajbi](https://github.com/YuvalHajbi)
+- [Ronmegini](https://github.com/ronmegini)
